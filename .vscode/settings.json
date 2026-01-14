@@ -1,0 +1,47 @@
+{
+  "todo-tree.highlights.customHighlight": {
+    "BUG": {
+      "icon": "bug",
+      "background": "#FF0000",
+      "foreground": "#FFFFFF",
+      "iconColour": "#FF0000"
+    },
+    "HACK": {
+      "icon": "tools",
+      "background": "#9b0da5",
+      "foreground": "#FFFFFF",
+      "iconColour": "#9b0da5"
+    },
+    "TODO": {
+      "icon": "check-circle-fill",
+      "background": "#06b340",
+      "foreground": "#FFFFFF",
+      "iconColour": "#06b340"
+    },
+    "FIXME": {
+      "icon": "flame",
+      "background": "#ffbf00",
+      "foreground": "#111111",
+      "iconColour": "#ffbf00"
+    },
+    "NOTE": {
+      "icon": "info",
+      "background": "#007acc",
+      "foreground": "#FFFFFF",
+      "iconColour": "#007acc"
+    },
+    "XXX": {
+      "icon": "no-entry-fill",
+      "background": "#FFFFFF",
+      "foreground": "#111111",
+      "iconColour": "#FFFFFF"
+    },
+    "[ ]": {
+      "icon": "issue-draft"
+    },
+    "[x]": {
+      "icon": "issue-closed"
+    }
+  },
+  "todo-tree.general.tags": ["BUG", "HACK", "FIXME", "TODO", "XXX", "[ ]", "[x]", "NOTE"]
+}

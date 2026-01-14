@@ -1,0 +1,56 @@
+/* Light mode CSS variables - black & white focused palette
+   Use `.dark` in `variables.dark.css` for dark mode overrides.
+*/
+
+:root {
+  --radius: 0.625rem;
+
+  /* Base */
+  --background: oklch(1 0 0); /* pure white */
+  --foreground: oklch(0% 0 0); /* pure black */
+
+  /* Cards / surfaces */
+  --card: oklch(0.99 0 0); /* very slightly off-white */
+  --card-foreground: oklch(0% 0 0);
+  --popover: oklch(0.99 0 0);
+  --popover-foreground: oklch(0% 0 0);
+
+  /* Primary/Accent (lean into black for strong emphasis) */
+  --primary: oklch(0% 0 0); /* black buttons, strong emphasis */
+  --primary-foreground: oklch(1 0 0); /* white text on black */
+  --secondary: oklch(0.2 0 0); /* dark gray for secondary elements */
+  --secondary-foreground: oklch(1 0 0);
+
+  /* Muted / subtle text */
+  --muted: oklch(0.95 0 0); /* very light gray surface */
+  --muted-foreground: oklch(0.35 0 0); /* medium gray text */
+
+  /* Accent (kept neutral - black/white language) */
+  --accent: oklch(0% 0 0);
+  --accent-foreground: oklch(1 0 0);
+
+  /* Destructive (actions like delete) - keep a visible red) */
+  --destructive: oklch(0.577 0.245 27.325);
+
+  /* Borders / inputs / ring */
+  --border: oklch(0% 0 0 / 8%); /* soft black border */
+  --input: oklch(0.99 0 0 / 60%); /* subtle light input background */
+  --ring: oklch(0% 0 0 / 14%);
+
+  /* Charts: keep high-contrast blacks + a neutral gray for variety */
+  --chart-1: oklch(0.488 0.243 264.376); /* light blue */
+  --chart-2: oklch(0.35 0 0); /* mid gray */
+  --chart-3: oklch(0.6 0 0); /* lighter gray */
+  --chart-4: oklch(0.8 0 0); /* very light gray */
+  --chart-5: oklch(0.15 0 0); /* dark gray */
+
+  /* Sidebar (light surfaces with dark text) */
+  --sidebar: oklch(0.99 0 0);
+  --sidebar-foreground: oklch(0% 0 0);
+  --sidebar-primary: oklch(0% 0 0);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.35 0 0);
+  --sidebar-accent-foreground: oklch(1 0 0);
+  --sidebar-border: oklch(0% 0 0 / 6%);
+  --sidebar-ring: oklch(0% 0 0 / 14%);
+}

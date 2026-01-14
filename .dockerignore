@@ -1,0 +1,77 @@
+# Dependency directories
+node_modules
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Build output
+.next/
+out/
+build/
+dist/
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Version control
+.git
+.gitignore
+
+# Development and IDE files
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Testing
+coverage/
+*.test.js
+*.test.ts
+
+# Logs
+logs
+*.log
+
+# Temporary files
+tmp/
+temp/
+
+# Docker
+Dockerfile
+.dockerignore
+
+# TypeScript
+*.tsbuildinfo
+
+# Misc project files
+README.md
+CHANGELOG.md
+.eslintrc
+.prettierrc
+.stylelintrc
+
+# Package managers
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Local cache and temporary files
+.cache/
+.npm/
+.yarn/
+
+# Statically generated files
+*.md
+*.yml
+*.yaml
+
+# Security and backup files
+*.pem
+*.key
+*.cert
+*.bak

@@ -1,0 +1,14 @@
+/* Base layer: element resets and global applies */
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: var(--font-lexend), system-ui, sans-serif;
+  }
+  button {
+    cursor: pointer;
+  }
+}

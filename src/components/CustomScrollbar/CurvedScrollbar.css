@@ -1,0 +1,68 @@
+/* CurvedScrollbar.css - pure CSS (no Tailwind) */
+:root {
+  --thumb-color: rgb(0, 188, 255);
+  --thumb-color-active: dodgerblue;
+  --thumb-width: 4;
+  --thumb-width-active: 6;
+  --track-color: transparent;
+  --track-color-active: rgba(128, 128, 128, 0.2);
+  --track-width: 4;
+  --track-width-active: 6;
+}
+
+.curved-scrollbar-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.curved-scroll-content {
+  height: 100%;
+  padding: 1rem;
+  overflow-y: scroll;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.curved-scroll-content::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* When the SVG contains an active element (thumb being dragged) adjust widths/colors */
+.scrollbar-svg:has(:active) {
+  --thumb-width: var(--thumb-width-active);
+  --track-width: var(--track-width-active);
+  --track-color: var(--track-color-active);
+}
+
+.scrollbar-track {
+  fill: none;
+  stroke: var(--track-color);
+  stroke-width: var(--track-width);
+  stroke-linecap: round;
+  transition: stroke-width 150ms ease-in-out, stroke 150ms ease-in-out;
+}
+
+.scrollbar-thumb {
+  fill: none;
+  stroke: var(--thumb-color);
+  stroke-width: var(--thumb-width);
+  stroke-linecap: round;
+  pointer-events: auto;
+  cursor: grab;
+  transition: stroke-width 150ms ease-in-out, stroke 150ms ease-in-out;
+}
+
+.scrollbar-thumb:active {
+  stroke: var(--thumb-color-active);
+  cursor: grabbing;
+}
