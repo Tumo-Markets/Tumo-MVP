@@ -8,13 +8,16 @@ export default function Positions() {
           <TableRow className="hover:bg-background">
             <TableHead className="w-[150px]">POSITION</TableHead>
             <TableHead className="w-[150px]">SIZE</TableHead>
+            <TableHead>NET VALUE</TableHead>
             <TableHead>COLLATERAL</TableHead>
-            <TableHead className="text-right">ENTRY PRICE</TableHead>
+            <TableHead>ENTRY PRICE</TableHead>
+            <TableHead>MARK PRICE</TableHead>
+            <TableHead className="text-right">LIQ. PRICE</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           <TableRow>
-            <TableCell colSpan={4} className="text-center text-[12px] py-4">
+            <TableCell colSpan={7} className="text-center text-[12px] py-4">
               No open positions
             </TableCell>
           </TableRow>

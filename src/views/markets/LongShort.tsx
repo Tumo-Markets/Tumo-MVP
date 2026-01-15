@@ -120,10 +120,20 @@ export default function LongShort({ isDisplay = true }: Props) {
           </span>
         </div>
         <div className="flex justify-between items-center text-sm">
-          <span className="text-tertiary-foreground">Current Position</span>
-          <span className="text-foreground font-medium">
-            {formatNumber(currentPosition, { fractionDigits: 2 })} DOGS
-          </span>
+          <span className="text-tertiary-foreground">Collateral In</span>
+          <span className="text-foreground font-medium">USDC</span>
+        </div>
+        <div className="flex justify-between items-center text-sm">
+          <span className="text-tertiary-foreground">Leverage</span>
+          <span className="text-foreground font-medium">{leverage}x</span>
+        </div>
+        <div className="flex justify-between items-center text-sm">
+          <span className="text-tertiary-foreground">Entry Price</span>
+          <span className="text-foreground font-medium">$13.22</span>
+        </div>
+        <div className="flex justify-between items-center text-sm">
+          <span className="text-tertiary-foreground">Liq. Price</span>
+          <span className="text-foreground font-medium">-</span>
         </div>
       </div>
 
@@ -136,8 +146,7 @@ export default function LongShort({ isDisplay = true }: Props) {
           positionType === 'long' ? 'bg-[#00d4aa]' : 'bg-[#ff4d6a]'
         }`}
       >
-        {/* {positionType.toUpperCase()} */}
-        Deposit
+        {positionType.toUpperCase()}
       </button>
     </div>
   );

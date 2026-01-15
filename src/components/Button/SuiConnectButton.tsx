@@ -61,13 +61,16 @@ export default function SuiConnectButton() {
     <div className="sui-connect-wrapper flex items-center gap-3">
       <style jsx global>{`
         /* Button chưa connect */
-        .sui-connect-wrapper [data-dapp-kit] button {
-          background-color: red !important;
+        .sui-connect-wrapper button[data-dapp-kit] {
+          background: linear-gradient(to right, #1c54ff, #001a61) !important;
           padding: 4px 8px !important;
+          color: white !important;
         }
+
         /* Button đã connect */
         .sui-connect-wrapper [data-dapp-kit].AccountDropdownMenu_connectedAccount__div2ql0 {
           padding: 4px 8px !important;
+          background: white !important;
         }
       `}</style>
 

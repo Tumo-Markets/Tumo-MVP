@@ -397,10 +397,10 @@ export default function TradingViewChart({ isDisplay = true }: Props) {
                   <span className="text-[#958794] mb-0.5">24H Volume</span>
                   <span className="font-medium">{selectedPair.volume24h}</span>
                 </div>
-                <div className="flex flex-col">
+                {/* <div className="flex flex-col">
                   <span className="text-[#958794] mb-0.5">Est. 1H Funding</span>
                   <span className="font-medium">{selectedPair.fundingRate}</span>
-                </div>
+                </div> */}
                 <div className="flex flex-col">
                   <span className="text-[#958794] mb-0.5">24H Change</span>
                   <span
