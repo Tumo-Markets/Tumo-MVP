@@ -19,6 +19,8 @@ import { useCryptoPairs } from 'src/hooks/markets/useCryptoPairs';
 import { getCandleSocket, getPriceSocket } from 'src/service/socket';
 import { useSelectedPair } from 'src/states/markets';
 import { useChartData } from 'src/hooks/markets/useChartData';
+import { useMarketStats } from 'src/hooks/markets/useMarketStats';
+import { Popover, PopoverContent, PopoverTrigger } from 'src/components/ui/popover';
 
 export type TCandleTime = '1m' | '5m' | '15m' | '1h' | '4h' | '1d' | '1w';
 
@@ -86,6 +88,10 @@ export default function TradingViewChart({ isDisplay = true }: Props) {
 
   // Fetch chart data using new API
   const { data: chartData, isLoading, isPending } = useChartData(selectedPair?.id, candleTime.title, 200);
+
+  // Fetch market stats
+  const { data: marketStats } = useMarketStats(selectedPair?.id);
+  console.log(' marketStats: ', marketStats);
 
   const [isSocketOpen, setIsSocketOpen] = useState(false);
   const [tooltipData, setTooltipData] = useState<TTooltipData | null>(null);
@@ -333,34 +339,38 @@ export default function TradingViewChart({ isDisplay = true }: Props) {
           <div className="mb-3 pl-2 md:pl-6">
             <div className="flex flex-col md:flex-row md:items-center gap-4">
               {/* Pair Selector */}
-              <div className="relative inline-block">
-                <select
-                  value={selectedPair?.id || ''}
-                  onChange={e => {
-                    const pair = cryptoPairs.find(p => p.id === e.target.value);
-                    if (pair) setSelectedPair(pair);
-                  }}
-                  disabled={isLoadingPairs || cryptoPairs.length === 0}
-                  className="appearance-none bg-secondary border border-[#958794] rounded-lg px-4 py-2 pr-10 text-sm md:text-base font-medium cursor-pointer hover:bg-opacity-80 transition-colors focus:outline-none focus:ring-2 focus:ring-[#958794] focus:ring-opacity-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isLoadingPairs ? (
-                    <option>Loading...</option>
-                  ) : cryptoPairs.length === 0 ? (
-                    <option>No pairs available</option>
-                  ) : (
-                    cryptoPairs.map(pair => (
-                      <option key={pair.id} value={pair.id}>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button
+                    disabled={isLoadingPairs || cryptoPairs.length === 0}
+                    className="bg-secondary border border-[#958794] rounded-lg px-4 py-2 text-sm md:text-base font-medium cursor-pointer hover:bg-opacity-80 transition-colors focus:outline-none focus:ring-2 focus:ring-[#958794] focus:ring-opacity-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  >
+                    {isLoadingPairs
+                      ? 'Loading...'
+                      : cryptoPairs.length === 0
+                      ? 'No pairs available'
+                      : selectedPair?.symbol || 'Select pair'}
+                    <svg className="w-4 h-4 text-[#958794]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="w-64 p-2 bg-secondary border-[#958794] max-h-[400px] overflow-y-auto">
+                  <div className="space-y-1">
+                    {cryptoPairs.map(pair => (
+                      <button
+                        key={pair.id}
+                        onClick={() => setSelectedPair(pair)}
+                        className={`w-full text-left px-3 py-2 rounded-md text-sm hover:bg-chip transition-colors ${
+                          selectedPair?.id === pair.id ? 'bg-chip' : ''
+                        }`}
+                      >
                         {pair.symbol}
-                      </option>
-                    ))
-                  )}
-                </select>
-                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-[#958794]">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </div>
-              </div>
+                      </button>
+                    ))}
+                  </div>
+                </PopoverContent>
+              </Popover>
 
               {/* Pair Info */}
               <div className="flex items-center gap-3 md:gap-6 flex-wrap text-xs md:text-sm">
@@ -374,20 +384,39 @@ export default function TradingViewChart({ isDisplay = true }: Props) {
                     </div>
                     <div className="flex flex-col">
                       <span className="text-[#958794] mb-0.5">Mark Price</span>
-                      <span className="font-medium">{formatNumber(selectedPair.markPrice, { fractionDigits: 2 })}</span>
+                      <span className="font-medium">
+                        {marketStats?.mark_price
+                          ? formatNumber(parseFloat(marketStats.mark_price), { fractionDigits: 2 })
+                          : formatNumber(selectedPair.markPrice, { fractionDigits: 2 })}
+                      </span>
                     </div>
                     <div className="flex flex-col">
                       <span className="text-[#958794] mb-0.5">24H Volume</span>
-                      <span className="font-medium">{selectedPair.volume24h}</span>
+                      <span className="font-medium">
+                        {marketStats?.volume_24h
+                          ? formatNumber(parseFloat(marketStats.volume_24h), { fractionDigits: 2 })
+                          : selectedPair.volume24h}
+                      </span>
                     </div>
                     <div className="flex flex-col">
                       <span className="text-[#958794] mb-0.5">24H Change</span>
                       <span
                         className={`font-medium ${
-                          selectedPair.priceChange24h.startsWith('+') ? 'text-green-500' : 'text-red-500'
+                          marketStats?.price_24h_change
+                            ? parseFloat(marketStats.price_24h_change) >= 0
+                              ? 'text-green-500'
+                              : 'text-red-500'
+                            : selectedPair.priceChange24h.startsWith('+')
+                            ? 'text-green-500'
+                            : 'text-red-500'
                         }`}
                       >
-                        {selectedPair.priceChange24h}
+                        {marketStats?.price_24h_change
+                          ? `${parseFloat(marketStats.price_24h_change) >= 0 ? '+' : ''}${formatNumber(
+                              parseFloat(marketStats.price_24h_change),
+                              { fractionDigits: 2, suffix: '%' },
+                            )}`
+                          : selectedPair.priceChange24h}
                       </span>
                     </div>
                   </>

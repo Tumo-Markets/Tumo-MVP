@@ -39,8 +39,8 @@ export type TCryptoPair = {
   maxLeverage: number;
 };
 
-const MARKETS_API_URL = 'http://131.153.239.187:8124/api/v1/markets/';
-const CHARTS_API_URL = 'http://131.153.239.187:8124/api/v1/charts/price/';
+const MARKETS_API_URL = 'https://backend-product.futstar.fun/api/v1/markets/';
+const CHARTS_API_URL = 'https://backend-product.futstar.fun/api/v1/charts/price/';
 
 export type TChartDataPoint = {
   timestamp: string;

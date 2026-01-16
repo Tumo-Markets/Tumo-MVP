@@ -5,11 +5,11 @@ export function getMarketSocket() {
 }
 
 export function getCandleSocket(marketId: string, timeframe: string) {
-  return new WebSocket(`ws://131.153.239.187:8124/api/v1/ws/candles/${marketId}/${timeframe}`);
+  return new WebSocket(`wss://backend-product.futstar.fun/api/v1/ws/candles/${marketId}/${timeframe}`);
 }
 
 export function getPriceSocket(marketId: string) {
-  return new WebSocket(`ws://131.153.239.187:8124/api/v1/ws/prices/${marketId}`);
+  return new WebSocket(`wss://backend-product.futstar.fun/api/v1/ws/prices/${marketId}`);
 }
 
 export const appSocket = getMarketSocket();
