@@ -13,71 +13,24 @@ import {
   UTCTimestamp,
 } from 'lightweight-charts';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import useChartCandle from 'src/hooks/chart/use-chart-candle';
 import useChartColor from 'src/hooks/chart/use-chart-color';
-import { useMarketsValue } from 'src/states/markets';
-import { appSocket } from 'src/service/socket';
-import { getMockSocket } from 'src/service/socket/mockSocket';
 import { formatNumber } from 'src/utils/format';
+import { useCryptoPairs } from 'src/hooks/markets/useCryptoPairs';
+import { getCandleSocket, getPriceSocket } from 'src/service/socket';
+import { useSelectedPair } from 'src/states/markets';
+import { useChartData } from 'src/hooks/markets/useChartData';
 
-export type TCandleTime = '1s' | '5m' | '1h' | '8h' | '1D' | '1W';
+export type TCandleTime = '1m' | '5m' | '15m' | '1h' | '4h' | '1d' | '1w';
 
 type TCandleItem = { title: TCandleTime; value: number };
 const candleOptions: TCandleItem[] = [
+  { title: '1m', value: 1 * 60 * 1000 },
   { title: '5m', value: 5 * 60 * 1000 },
+  { title: '15m', value: 15 * 60 * 1000 },
   { title: '1h', value: 1 * 60 * 60 * 1000 },
-  { title: '8h', value: 8 * 60 * 60 * 1000 },
-  { title: '1D', value: 24 * 60 * 60 * 1000 },
-  { title: '1W', value: 7 * 24 * 60 * 60 * 1000 },
-];
-
-type TCryptoPair = {
-  id: string;
-  symbol: string;
-  price: number;
-  markPrice: number;
-  volume24h: string;
-  fundingRate: string;
-  priceChange24h: string;
-};
-
-const cryptoPairs: TCryptoPair[] = [
-  {
-    id: 'btc-usdt',
-    symbol: 'BTC/USDT',
-    price: 96847.5,
-    markPrice: 96850.2,
-    volume24h: '$42.8B',
-    fundingRate: '0.0100%',
-    priceChange24h: '+2.45%',
-  },
-  {
-    id: 'eth-usdt',
-    symbol: 'ETH/USDT',
-    price: 3342.8,
-    markPrice: 3343.15,
-    volume24h: '$18.5B',
-    fundingRate: '0.0085%',
-    priceChange24h: '+1.82%',
-  },
-  {
-    id: 'sol-usdt',
-    symbol: 'SOL/USDT',
-    price: 189.45,
-    markPrice: 189.52,
-    volume24h: '$5.2B',
-    fundingRate: '0.0120%',
-    priceChange24h: '+3.67%',
-  },
-  {
-    id: 'bnb-usdt',
-    symbol: 'BNB/USDT',
-    price: 693.2,
-    markPrice: 693.35,
-    volume24h: '$2.1B',
-    fundingRate: '0.0095%',
-    priceChange24h: '+1.23%',
-  },
+  { title: '4h', value: 4 * 60 * 60 * 1000 },
+  { title: '1d', value: 24 * 60 * 60 * 1000 },
+  { title: '1w', value: 7 * 24 * 60 * 60 * 1000 },
 ];
 
 export type TCandleDatapoint = {
@@ -117,36 +70,31 @@ interface Props {
 
 export default function TradingViewChart({ isDisplay = true }: Props) {
   const { grid, candle, line, text } = useChartColor();
-  const [candleTime, setCandleTime] = useState<TCandleItem>({ title: '1h', value: 1 * 60 * 60 * 1000 });
-  const marketsState = useMarketsValue();
+  const [candleTime, setCandleTime] = useState<TCandleItem>({ title: '15m', value: 15 * 60 * 1000 });
 
-  // Convert created markets to TCryptoPair format and combine with default pairs
-  const allCryptoPairs = useMemo(() => {
-    const createdPairs: TCryptoPair[] = marketsState.createdMarkets.map(market => ({
-      id: market.id,
-      symbol: `${market.tokenSymbol}/USDT`,
-      price: 450.25,
-      markPrice: 450.32,
-      volume24h: `$${(market.volume / 1000).toFixed(1)}K`,
-      fundingRate: '0.0100%',
-      priceChange24h: '+3.21%',
-    }));
-    // Put newly created pairs first so they appear at the top
-    return [...createdPairs, ...cryptoPairs];
-  }, [marketsState.createdMarkets]);
+  // Fetch crypto pairs using react-query
+  const { data: cryptoPairs = [], isLoading: isLoadingPairs } = useCryptoPairs(1, 20);
 
-  const [selectedPair, setSelectedPair] = useState<TCryptoPair>(allCryptoPairs[0]);
-  const { data, isLoading, isPending } = useChartCandle(Math.floor(candleTime.value / 1000));
+  const [selectedPair, setSelectedPair] = useSelectedPair();
 
-  // Toggle this to switch between real and mock WebSocket
-  const [useMockData] = useState(true);
+  // Set initial selected pair when data is loaded
+  useEffect(() => {
+    if (!selectedPair && cryptoPairs.length > 0) {
+      setSelectedPair(cryptoPairs[0]);
+    }
+  }, [cryptoPairs, selectedPair, setSelectedPair]);
+
+  // Fetch chart data using new API
+  const { data: chartData, isLoading, isPending } = useChartData(selectedPair?.id, candleTime.title, 200);
+
   const [isSocketOpen, setIsSocketOpen] = useState(false);
   const [tooltipData, setTooltipData] = useState<TTooltipData | null>(null);
+  const [livePrice, setLivePrice] = useState<number | null>(null);
 
-  const lineSeriesRef = useRef<ISeriesApi<'Line'>>(null);
   const candleSeriesRef = useRef<ISeriesApi<'Candlestick'>>(null);
   const chartContainerRef = useRef<HTMLDivElement>(null);
-  const socketRef = useRef(useMockData ? getMockSocket() : appSocket);
+  const socketRef = useRef<WebSocket | null>(null);
+  const priceSocketRef = useRef<WebSocket | null>(null);
 
   const defaultOption: DeepPartial<ChartOptions> = useMemo(
     () => ({
@@ -164,7 +112,7 @@ export default function TradingViewChart({ isDisplay = true }: Props) {
         locale: 'en-US',
         dateFormat: 'yyyy-MM-dd HH:mm',
         priceFormatter: (price: number) => {
-          return formatNumber(price, { fractionDigits: 2, suffix: '%' });
+          return formatNumber(price, { fractionDigits: 2, suffix: '' });
         },
         timeFormatter: (time: number) => {
           const date = new Date(time * 1000);
@@ -204,78 +152,112 @@ export default function TradingViewChart({ isDisplay = true }: Props) {
     [grid],
   );
 
+  // WebSocket connection management
   useEffect(() => {
-    if (isSocketOpen) {
-      return;
-    }
-    const intervalId = setInterval(() => {
-      if (socketRef.current.readyState === WebSocket.OPEN) {
-        setIsSocketOpen(true);
-      }
-    }, 1000);
-    return () => clearInterval(intervalId);
-  }, [isSocketOpen]);
+    if (!selectedPair?.id) return;
 
-  //add socket
-  useEffect(() => {
-    if (isLoading || isPending) {
-      return;
-    }
-    if (!data) {
-      return;
-    }
+    const ws = getCandleSocket(selectedPair.id, candleTime.title);
+    socketRef.current = ws;
 
-    if (!isSocketOpen) {
-      return;
-    }
-
-    const socket = socketRef.current;
-    const pairId = useMockData ? 'mock' : 'pair';
-    const streamId = `${pairId}@kline_${Math.floor(candleTime.value / 1000)}`;
-
-    const handleClose = () => {
-      console.log('Socket closed');
+    ws.onopen = () => {
+      console.log('WebSocket connected:', `${selectedPair.id}/${candleTime.title}`);
+      setIsSocketOpen(true);
     };
 
-    const handleMessage = (e: MessageEvent) => {
-      const messageParsed = JSON.parse(e.data || '{}') as TCandleDatapoint;
-      const dataPoint = messageParsed?.data?.k;
-      if (!(messageParsed?.stream === streamId)) {
-        return;
-      }
-
-      candleSeriesRef.current?.update({
-        time: Number(dataPoint?.t || 0) as UTCTimestamp,
-        open: Number(dataPoint?.o || 0),
-        high: Number(dataPoint?.h || 0),
-        low: Number(dataPoint?.l || 0),
-        close: Number(dataPoint?.c || 0),
-      });
-      lineSeriesRef?.current?.update({
-        time: Number(dataPoint?.t || 0) as UTCTimestamp,
-        value: Number(dataPoint?.f || 0),
-      });
+    ws.onerror = error => {
+      console.error('WebSocket error:', error);
+      setIsSocketOpen(false);
     };
 
-    socket.onclose = handleClose;
-    socket.onmessage = handleMessage;
-
-    const subscribeCandleMessage = JSON.stringify({
-      method: 'SUBSCRIBE',
-      params: [streamId],
-    });
-
-    socket.send(subscribeCandleMessage);
+    ws.onclose = () => {
+      console.log('WebSocket closed');
+      setIsSocketOpen(false);
+    };
 
     return () => {
-      // Cleanup: unsubscribe when effect cleanup runs
-      const unsubscribeMessage = JSON.stringify({
-        method: 'UNSUBSCRIBE',
-        params: [streamId],
-      });
-      socket.send(unsubscribeMessage);
+      if (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING) {
+        ws.close();
+      }
+      socketRef.current = null;
+      setIsSocketOpen(false);
     };
-  }, [candleTime.value, data, isLoading, isPending, isSocketOpen, useMockData]);
+  }, [selectedPair?.id, candleTime.title]);
+
+  // Price WebSocket connection management
+
+  useEffect(() => {
+    if (!selectedPair?.id) return;
+
+    const priceWs = getPriceSocket(selectedPair.id);
+    priceSocketRef.current = priceWs;
+
+    priceWs.onopen = () => {
+      console.log('Price WebSocket connected:', selectedPair.id);
+    };
+
+    priceWs.onmessage = (e: MessageEvent) => {
+      try {
+        const data = JSON.parse(e.data);
+        if (data.type === 'price_update' && data.price) {
+          setLivePrice(parseFloat(data.price));
+        }
+      } catch (error) {
+        console.error('Error parsing price WebSocket message:', error);
+      }
+    };
+
+    priceWs.onerror = error => {
+      console.error('Price WebSocket error:', error);
+    };
+
+    priceWs.onclose = () => {
+      console.log('Price WebSocket closed');
+    };
+
+    return () => {
+      if (priceWs.readyState === WebSocket.OPEN || priceWs.readyState === WebSocket.CONNECTING) {
+        priceWs.close();
+      }
+      priceSocketRef.current = null;
+    };
+  }, [selectedPair?.id]);
+
+  // Handle WebSocket messages
+  useEffect(() => {
+    if (!isSocketOpen || !socketRef.current) return;
+
+    const handleMessage = (e: MessageEvent) => {
+      try {
+        const data = JSON.parse(e.data);
+
+        // Check if it's a candle update
+        if (data.type === 'candle' && data.candle_start_timestamp) {
+          const unixTimestamp = data.candle_start_timestamp as UTCTimestamp;
+
+          // Update candle series
+          if (candleSeriesRef.current) {
+            candleSeriesRef.current.update({
+              time: unixTimestamp,
+              open: parseFloat(data.open),
+              high: parseFloat(data.high),
+              low: parseFloat(data.low),
+              close: parseFloat(data.close),
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Error parsing WebSocket message:', error);
+      }
+    };
+
+    socketRef.current.onmessage = handleMessage;
+
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.onmessage = null;
+      }
+    };
+  }, [isSocketOpen]);
 
   useEffect(() => {
     //INIT DATA
@@ -283,6 +265,9 @@ export default function TradingViewChart({ isDisplay = true }: Props) {
       return;
     }
     if (isLoading || isPending) {
+      return;
+    }
+    if (!chartData?.data || chartData.data.length === 0) {
       return;
     }
     const chart = createChart(chartContainerRef.current, {
@@ -295,7 +280,7 @@ export default function TradingViewChart({ isDisplay = true }: Props) {
       width: chartContainerRef.current.clientWidth,
       height: chartContainerRef.current.clientHeight,
     });
-    chart.timeScale().fitContent();
+    chart.timeScale();
 
     const handleResize = () => {
       chart.applyOptions({
@@ -303,18 +288,6 @@ export default function TradingViewChart({ isDisplay = true }: Props) {
         height: Number(chartContainerRef?.current?.clientHeight),
       });
     };
-    //ADD LINE DATA ***************************************************************************************************************************************
-    const lineSeries = chart.addSeries(LineSeries, { color: line, baseLineWidth: 1, lineWidth: 1 });
-    lineSeriesRef.current = lineSeries;
-    lineSeries.setData(
-      data?.data?.map(d => {
-        return {
-          time: d.timestamp as UTCTimestamp,
-          value: d.floatApr,
-        };
-      }) || [],
-    );
-
     //ADD CANDLE DATA *************************************************************************************************************************************
     const candleSeries = chart.addSeries(CandlestickSeries, {
       upColor: candle?.up,
@@ -322,17 +295,16 @@ export default function TradingViewChart({ isDisplay = true }: Props) {
     });
     candleSeriesRef.current = candleSeries;
     candleSeries.setData(
-      data?.data
-        ?.filter(d => !!d.marketApr)
-        ?.map(d => {
-          return {
-            time: d.timestamp as UTCTimestamp,
-            open: d?.marketApr?.open || 0,
-            close: d?.marketApr?.close || 0,
-            high: d?.marketApr?.high || 0,
-            low: d?.marketApr?.low || 0,
-          };
-        }) || [],
+      chartData.data.map(d => {
+        const unixTimestamp = Math.floor(new Date(d.timestamp).getTime() / 1000);
+        return {
+          time: unixTimestamp as UTCTimestamp,
+          open: parseFloat(d.open),
+          close: parseFloat(d.close),
+          high: parseFloat(d.high),
+          low: parseFloat(d.low),
+        };
+      }),
     );
     chart.subscribeCrosshairMove(param => {
       const v = param?.seriesData.get(candleSeries) as TTooltipData;
@@ -352,7 +324,7 @@ export default function TradingViewChart({ isDisplay = true }: Props) {
       window.removeEventListener('resize', handleResize);
       chart.remove();
     };
-  }, [candle?.down, candle?.up, data?.data, defaultOption, isLoading, isPending, line, text]);
+  }, [candle?.down, candle?.up, chartData, defaultOption, isLoading, isPending, line, text]);
 
   return (
     <div className={`w-full h-full border ${!isDisplay ? '' : 'border-border rounded-lg p-2'} `}>
@@ -363,18 +335,25 @@ export default function TradingViewChart({ isDisplay = true }: Props) {
               {/* Pair Selector */}
               <div className="relative inline-block">
                 <select
-                  value={selectedPair.id}
+                  value={selectedPair?.id || ''}
                   onChange={e => {
-                    const pair = allCryptoPairs.find(p => p.id === e.target.value);
+                    const pair = cryptoPairs.find(p => p.id === e.target.value);
                     if (pair) setSelectedPair(pair);
                   }}
-                  className="appearance-none bg-secondary border border-[#958794] rounded-lg px-4 py-2 pr-10 text-sm md:text-base font-medium cursor-pointer hover:bg-opacity-80 transition-colors focus:outline-none focus:ring-2 focus:ring-[#958794] focus:ring-opacity-50"
+                  disabled={isLoadingPairs || cryptoPairs.length === 0}
+                  className="appearance-none bg-secondary border border-[#958794] rounded-lg px-4 py-2 pr-10 text-sm md:text-base font-medium cursor-pointer hover:bg-opacity-80 transition-colors focus:outline-none focus:ring-2 focus:ring-[#958794] focus:ring-opacity-50 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {allCryptoPairs.map(pair => (
-                    <option key={pair.id} value={pair.id}>
-                      {pair.symbol}
-                    </option>
-                  ))}
+                  {isLoadingPairs ? (
+                    <option>Loading...</option>
+                  ) : cryptoPairs.length === 0 ? (
+                    <option>No pairs available</option>
+                  ) : (
+                    cryptoPairs.map(pair => (
+                      <option key={pair.id} value={pair.id}>
+                        {pair.symbol}
+                      </option>
+                    ))
+                  )}
                 </select>
                 <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-[#958794]">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -385,32 +364,36 @@ export default function TradingViewChart({ isDisplay = true }: Props) {
 
               {/* Pair Info */}
               <div className="flex items-center gap-3 md:gap-6 flex-wrap text-xs md:text-sm">
-                <div className="flex flex-col">
-                  <span className="text-[#958794] mb-0.5">Price</span>
-                  <span className="font-medium">{formatNumber(selectedPair.price, { fractionDigits: 2 })}</span>
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-[#958794] mb-0.5">Mark Price</span>
-                  <span className="font-medium">{formatNumber(selectedPair.markPrice, { fractionDigits: 2 })}</span>
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-[#958794] mb-0.5">24H Volume</span>
-                  <span className="font-medium">{selectedPair.volume24h}</span>
-                </div>
-                {/* <div className="flex flex-col">
-                  <span className="text-[#958794] mb-0.5">Est. 1H Funding</span>
-                  <span className="font-medium">{selectedPair.fundingRate}</span>
-                </div> */}
-                <div className="flex flex-col">
-                  <span className="text-[#958794] mb-0.5">24H Change</span>
-                  <span
-                    className={`font-medium ${
-                      selectedPair.priceChange24h.startsWith('+') ? 'text-green-500' : 'text-red-500'
-                    }`}
-                  >
-                    {selectedPair.priceChange24h}
-                  </span>
-                </div>
+                {selectedPair ? (
+                  <>
+                    <div className="flex flex-col">
+                      <span className="text-[#958794] mb-0.5">Price</span>
+                      <span className="font-medium">
+                        {formatNumber(livePrice ?? selectedPair.price, { fractionDigits: 2 })}
+                      </span>
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-[#958794] mb-0.5">Mark Price</span>
+                      <span className="font-medium">{formatNumber(selectedPair.markPrice, { fractionDigits: 2 })}</span>
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-[#958794] mb-0.5">24H Volume</span>
+                      <span className="font-medium">{selectedPair.volume24h}</span>
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-[#958794] mb-0.5">24H Change</span>
+                      <span
+                        className={`font-medium ${
+                          selectedPair.priceChange24h.startsWith('+') ? 'text-green-500' : 'text-red-500'
+                        }`}
+                      >
+                        {selectedPair.priceChange24h}
+                      </span>
+                    </div>
+                  </>
+                ) : (
+                  <div className="text-[#958794]">Loading pair data...</div>
+                )}
               </div>
             </div>
           </div>

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { formatNumber } from 'src/utils/format';
+import { useSelectedPairValue } from 'src/states/markets';
 
 type PositionType = 'long' | 'short';
 
@@ -10,12 +11,13 @@ interface Props {
 }
 
 export default function LongShort({ isDisplay = true }: Props) {
+  const selectedPair = useSelectedPairValue();
   const [positionType, setPositionType] = useState<PositionType>('long');
   const [amount, setAmount] = useState('0.00');
-  const [leverage, setLeverage] = useState(13);
+  const maxLeverage = selectedPair?.maxLeverage || 50;
+  const [leverage, setLeverage] = useState(Math.min(13, maxLeverage));
   const [availableBalance] = useState(0.0);
   const [currentPosition] = useState(0.0);
-  const maxLeverage = 20;
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -26,7 +28,8 @@ export default function LongShort({ isDisplay = true }: Props) {
   };
 
   const handleLeverageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setLeverage(Number(e.target.value));
+    const newLeverage = Number(e.target.value);
+    setLeverage(Math.min(newLeverage, maxLeverage));
   };
 
   const handleSubmit = () => {

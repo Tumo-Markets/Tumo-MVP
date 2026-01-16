@@ -1,11 +1,14 @@
 import { atom } from 'jotai';
 import { MarketsSliceType, CreatedMarket } from './types';
+import { TCryptoPair } from 'src/service/api/markets';
 
 const initialState: MarketsSliceType = {
   createdMarkets: [],
 };
 
 export const MarketsValue = atom<MarketsSliceType>(initialState);
+
+export const SelectedPairAtom = atom<TCryptoPair | null>(null);
 
 export const addMarket = atom(null, (get, set, market: CreatedMarket) => {
   const marketsData = get(MarketsValue);
