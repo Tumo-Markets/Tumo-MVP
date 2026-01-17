@@ -34,7 +34,7 @@ export const useMarketStats = (marketId: string | undefined) => {
     queryKey: ['marketStats', marketId],
     queryFn: () => fetchMarketStats(marketId!),
     enabled: !!marketId,
-    refetchInterval: 10000, // Refetch every 10 seconds
+    refetchInterval: 20000, // Refetch every 20 seconds
     staleTime: 5000,
   });
 };

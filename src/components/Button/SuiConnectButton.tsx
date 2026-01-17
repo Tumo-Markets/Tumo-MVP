@@ -86,7 +86,7 @@ export default function SuiConnectButton() {
         </div>
       )}
 
-      <ConnectButton />
+      <ConnectButton style={{ fontSize: '16px' }} />
     </div>
   );
 }

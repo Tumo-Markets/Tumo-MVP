@@ -21,6 +21,7 @@ import { useSelectedPair } from 'src/states/markets';
 import { useChartData } from 'src/hooks/markets/useChartData';
 import { useMarketStats } from 'src/hooks/markets/useMarketStats';
 import { Popover, PopoverContent, PopoverTrigger } from 'src/components/ui/popover';
+import { BN } from 'src/utils';
 
 export type TCandleTime = '1m' | '5m' | '15m' | '1h' | '4h' | '1d' | '1w';
 
@@ -333,11 +334,11 @@ export default function TradingViewChart({ isDisplay = true }: Props) {
   }, [candle?.down, candle?.up, chartData, defaultOption, isLoading, isPending, line, text]);
 
   return (
-    <div className={`w-full h-full border ${!isDisplay ? '' : 'border-border rounded-lg p-2'} `}>
+    <div className={`w-full h-full border ${!isDisplay ? '' : 'border-border rounded-lg py-2'} `}>
       {isDisplay && (
-        <>
-          <div className="mb-3 pl-2 md:pl-6">
-            <div className="flex flex-col md:flex-row md:items-center gap-4">
+        <div className="flex justify-between px-2 flex-wrap">
+          <div>
+            <div className="flex flex-col md:flex-row md:items-center gap-4 mb-2 flex-wrap">
               {/* Pair Selector */}
               <Popover>
                 <PopoverTrigger asChild>
@@ -402,21 +403,16 @@ export default function TradingViewChart({ isDisplay = true }: Props) {
                       <span className="text-[#958794] mb-0.5">24H Change</span>
                       <span
                         className={`font-medium ${
-                          marketStats?.price_24h_change
-                            ? parseFloat(marketStats.price_24h_change) >= 0
-                              ? 'text-green-500'
-                              : 'text-red-500'
-                            : selectedPair.priceChange24h.startsWith('+')
+                          marketStats?.price_24h_change && parseFloat(marketStats.price_24h_change) >= 0
                             ? 'text-green-500'
                             : 'text-red-500'
                         }`}
                       >
-                        {marketStats?.price_24h_change
-                          ? `${parseFloat(marketStats.price_24h_change) >= 0 ? '+' : ''}${formatNumber(
-                              parseFloat(marketStats.price_24h_change),
-                              { fractionDigits: 2, suffix: '%' },
-                            )}`
-                          : selectedPair.priceChange24h}
+                        {marketStats?.price_24h_change &&
+                          `${parseFloat(marketStats.price_24h_change) >= 0 ? '+' : ''}${formatNumber(
+                            BN(marketStats.price_24h_change).times(100),
+                            { fractionDigits: 2, suffix: '%' },
+                          )}`}
                       </span>
                     </div>
                   </>
@@ -425,68 +421,68 @@ export default function TradingViewChart({ isDisplay = true }: Props) {
                 )}
               </div>
             </div>
-          </div>
 
-          <div className="mb-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 mr-2 md:mr-[65px] pl-2 md:pl-6">
-            <div className="w-full md:w-auto overflow-x-auto">
-              {tooltipData && (
-                <div className="flex items-center gap-2 md:gap-3 flex-wrap md:flex-nowrap">
-                  <p className="text-tertiary-foreground text-xs md:text-sm whitespace-nowrap">
-                    {new Date(tooltipData.time * 1000).toLocaleDateString()}{' '}
-                    {new Date(tooltipData.time * 1000).toLocaleTimeString('EN-us', {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                      hour12: false,
-                    })}
-                  </p>
-                  <p
-                    className="border py-0.5 px-1.5 md:px-2 rounded-xl text-xs md:text-sm whitespace-nowrap"
-                    style={{ backgroundColor: '#161616' }}
-                  >
-                    <span className="text-[#958794]">Open: </span>
-                    <span className="font-medium">{formatNumber(tooltipData.open, { fractionDigits: 2 })}</span>
-                  </p>
-                  <p
-                    className="border py-0.5 px-1.5 md:px-2 rounded-xl text-xs md:text-sm whitespace-nowrap"
-                    style={{ backgroundColor: '#161616' }}
-                  >
-                    <span className="text-[#958794]">Close: </span>
-                    <span className="font-medium">{formatNumber(tooltipData.close, { fractionDigits: 2 })}</span>
-                  </p>
-                  <p
-                    className="border py-0.5 px-1.5 md:px-2 rounded-xl text-xs md:text-sm whitespace-nowrap"
-                    style={{ backgroundColor: '#161616' }}
-                  >
-                    <span className="text-[#958794]">High: </span>
-                    <span className="font-medium">{formatNumber(tooltipData.high, { fractionDigits: 2 })}</span>
-                  </p>
-                  <p
-                    className="border py-0.5 px-1.5 md:px-2 rounded-xl text-xs md:text-sm whitespace-nowrap"
-                    style={{ backgroundColor: '#161616' }}
-                  >
-                    <span className="text-[#958794]">Low: </span>
-                    <span className="font-medium">{formatNumber(tooltipData.low, { fractionDigits: 2 })}</span>
-                  </p>
-                </div>
-              )}
+            <div className="mb-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 ">
+              <div className="w-full md:w-auto overflow-x-auto">
+                {tooltipData && (
+                  <div className="flex items-center gap-2 md:gap-3 flex-wrap ">
+                    {/* <p className="text-tertiary-foreground text-xs md:text-sm whitespace-nowrap">
+                      {new Date(tooltipData.time * 1000).toLocaleDateString()}{' '}
+                      {new Date(tooltipData.time * 1000).toLocaleTimeString('EN-us', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false,
+                      })}
+                    </p> */}
+                    <p
+                      className="border py-0.5 px-1.5 md:px-2 rounded-xl text-xs md:text-sm whitespace-nowrap"
+                      style={{ backgroundColor: '#161616' }}
+                    >
+                      <span className="text-[#958794]">Open: </span>
+                      <span className="font-medium">{formatNumber(tooltipData.open, { fractionDigits: 2 })}</span>
+                    </p>
+                    <p
+                      className="border py-0.5 px-1.5 md:px-2 rounded-xl text-xs md:text-sm whitespace-nowrap"
+                      style={{ backgroundColor: '#161616' }}
+                    >
+                      <span className="text-[#958794]">Close: </span>
+                      <span className="font-medium">{formatNumber(tooltipData.close, { fractionDigits: 2 })}</span>
+                    </p>
+                    <p
+                      className="border py-0.5 px-1.5 md:px-2 rounded-xl text-xs md:text-sm whitespace-nowrap"
+                      style={{ backgroundColor: '#161616' }}
+                    >
+                      <span className="text-[#958794]">High: </span>
+                      <span className="font-medium">{formatNumber(tooltipData.high, { fractionDigits: 2 })}</span>
+                    </p>
+                    <p
+                      className="border py-0.5 px-1.5 md:px-2 rounded-xl text-xs md:text-sm whitespace-nowrap"
+                      style={{ backgroundColor: '#161616' }}
+                    >
+                      <span className="text-[#958794]">Low: </span>
+                      <span className="font-medium">{formatNumber(tooltipData.low, { fractionDigits: 2 })}</span>
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-        </>
+          <div className="inline-flex rounded-[99px] p-1 mb-2 bg-secondary border-[0.5] border-t h-fit">
+            {candleOptions?.map(option => {
+              const active = option.title === candleTime.title;
+              return (
+                <div
+                  className={`cursor-pointer px-3 py-0.5 rounded-[99px] ${active ? 'bg-chip' : 'text-[#958794]'}`}
+                  onClick={() => setCandleTime(option)}
+                  key={option.title}
+                >
+                  <p className="text-[12px] md:text-[14px]">{option.title}</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
       )}
-      <div className="inline-flex rounded-[99px] p-1 mb-2 bg-secondary border-[0.5] border-t">
-        {candleOptions?.map(option => {
-          const active = option.title === candleTime.title;
-          return (
-            <div
-              className={`cursor-pointer px-3 py-0.5 rounded-[99px] ${active ? 'bg-chip' : 'text-[#958794]'}`}
-              onClick={() => setCandleTime(option)}
-              key={option.title}
-            >
-              <p className="text-[12px] md:text-[14px]">{option.title}</p>
-            </div>
-          );
-        })}
-      </div>
 
       <div className="w-full h-[calc(100vh-400px)] lg:h-[calc(100vh-270px)]  overflow-hidden border-t">
         <div ref={chartContainerRef} className="w-full h-full" />

@@ -1,8 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { formatNumber } from 'src/utils/format';
 import { useSelectedPairValue } from 'src/states/markets';
+import { usePositionPreview } from 'src/hooks/usePositionPreview';
+import { Skeleton } from 'src/components/ui/skeleton';
 
 type PositionType = 'long' | 'short';
 
@@ -18,6 +20,29 @@ export default function LongShort({ isDisplay = true }: Props) {
   const [leverage, setLeverage] = useState(Math.min(13, maxLeverage));
   const [availableBalance] = useState(0.0);
   const [currentPosition] = useState(0.0);
+
+  // Debounced values for API calls
+  const [debouncedAmount, setDebouncedAmount] = useState(amount);
+  const [debouncedLeverage, setDebouncedLeverage] = useState(leverage);
+  const [debouncedPositionType, setDebouncedPositionType] = useState(positionType);
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setDebouncedAmount(amount);
+      setDebouncedLeverage(leverage);
+      setDebouncedPositionType(positionType);
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, [amount, leverage, positionType]);
+
+  // Use the TanStack Query hook
+  const { data: previewData, isLoading: isLoadingPreview } = usePositionPreview({
+    leverage: debouncedLeverage.toString(),
+    market_id: selectedPair?.id || 'bnb-usdc-perp',
+    side: debouncedPositionType,
+    size: debouncedAmount,
+  });
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -116,15 +141,23 @@ export default function LongShort({ isDisplay = true }: Props) {
 
       {/* Balance Information */}
       <div className="space-y-2">
-        <div className="flex justify-between items-center text-sm">
+        {/* <div className="flex justify-between items-center text-sm">
           <span className="text-tertiary-foreground">Available Balance</span>
           <span className="text-foreground font-medium">
             {formatNumber(availableBalance, { fractionDigits: 2 })} USDC
           </span>
-        </div>
+        </div> */}
         <div className="flex justify-between items-center text-sm">
-          <span className="text-tertiary-foreground">Collateral In</span>
-          <span className="text-foreground font-medium">USDC</span>
+          <span className="text-tertiary-foreground">Collateral Required</span>
+          <span className="text-foreground font-medium">
+            {isLoadingPreview ? (
+              <Skeleton className="h-4 w-20" />
+            ) : previewData ? (
+              `${formatNumber(parseFloat(previewData.collateral_required), { fractionDigits: 2 })} USDC`
+            ) : (
+              '-'
+            )}
+          </span>
         </div>
         <div className="flex justify-between items-center text-sm">
           <span className="text-tertiary-foreground">Leverage</span>
@@ -132,11 +165,63 @@ export default function LongShort({ isDisplay = true }: Props) {
         </div>
         <div className="flex justify-between items-center text-sm">
           <span className="text-tertiary-foreground">Entry Price</span>
-          <span className="text-foreground font-medium">$13.22</span>
+          <span className="text-foreground font-medium">
+            {isLoadingPreview ? (
+              <Skeleton className="h-4 w-20" />
+            ) : previewData ? (
+              `$${formatNumber(parseFloat(previewData.entry_price), { fractionDigits: 2 })}`
+            ) : (
+              '-'
+            )}
+          </span>
         </div>
         <div className="flex justify-between items-center text-sm">
           <span className="text-tertiary-foreground">Liq. Price</span>
-          <span className="text-foreground font-medium">-</span>
+          <span className="text-foreground font-medium">
+            {isLoadingPreview ? (
+              <Skeleton className="h-4 w-20" />
+            ) : previewData ? (
+              `$${formatNumber(parseFloat(previewData.liquidation_price), { fractionDigits: 2 })}`
+            ) : (
+              '-'
+            )}
+          </span>
+        </div>
+        <div className="flex justify-between items-center text-sm">
+          <span className="text-tertiary-foreground">Position Value</span>
+          <span className="text-foreground font-medium">
+            {isLoadingPreview ? (
+              <Skeleton className="h-4 w-20" />
+            ) : previewData ? (
+              `${formatNumber(parseFloat(previewData.position_value), { fractionDigits: 2 })} USDC`
+            ) : (
+              '-'
+            )}
+          </span>
+        </div>
+        <div className="flex justify-between items-center text-sm">
+          <span className="text-tertiary-foreground">Estimated Fees</span>
+          <span className="text-foreground font-medium">
+            {isLoadingPreview ? (
+              <Skeleton className="h-4 w-20" />
+            ) : previewData ? (
+              `${formatNumber(parseFloat(previewData.estimated_fees), { fractionDigits: 2 })} USDC`
+            ) : (
+              '-'
+            )}
+          </span>
+        </div>
+        <div className="flex justify-between items-center text-sm">
+          <span className="text-tertiary-foreground">Total Cost</span>
+          <span className="text-foreground font-medium">
+            {isLoadingPreview ? (
+              <Skeleton className="h-4 w-20" />
+            ) : previewData ? (
+              `${formatNumber(parseFloat(previewData.total_cost), { fractionDigits: 2 })} USDC`
+            ) : (
+              '-'
+            )}
+          </span>
         </div>
       </div>
 
