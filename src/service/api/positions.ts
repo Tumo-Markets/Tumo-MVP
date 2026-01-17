@@ -1,6 +1,6 @@
 import { axiosClient } from '../axios';
 
-const BASE_URL = 'http://131.153.239.187:8124/api/v1';
+const BASE_URL = 'https://backend-product.futstar.fun/api/v1';
 
 export interface PositionPreviewRequest {
   leverage: string;
