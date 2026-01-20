@@ -1,6 +1,30 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Prerequisites
+
+Before you begin, make sure you have the following installed on your machine:
+
+- **Node.js** (LTS version recommended)
+- **npm** (usually included with Node.js)
+
 ## Getting Started
+
+Follow these steps to set up the project locally.
+
+1.  **Clone the repository:**
+
+    ```bash
+    git clone https://github.com/Tumo-Markets/Tumo-MVP.git
+    cd Tumo-MVP
+    ```
+
+2.  **Install dependencies:**
+
+    ```bash
+    npm install
+    ```
+
+## Running Development Server
 
 First, run the development server:
 
@@ -34,3 +58,18 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## ⚠️ License & Copyright Notice
+
+**This project is the proprietary property of A-Star Group and its core members.**
+
+**Copyright (c) 2026:**
+* A-Star Group
+* Truong Gia Bach
+* Tran Quoc Viet Quang
+* Nguyen Duc Thang
+* Dang Manh Cuong
+* Luong Hoai Nam
+
+**All Rights Reserved.**
+Unauthorized use, copying, modification, or distribution of this source code is strictly prohibited. Only the individuals and entities listed above have the right to use this software for any purpose.
