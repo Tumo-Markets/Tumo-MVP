@@ -1,5 +1,5 @@
 'use client';
-import { ConnectButton, useCurrentAccount, useSuiClient, useSuiClientContext } from '@mysten/dapp-kit';
+import { ConnectButton, useCurrentAccount, useSuiClient, useSuiClientContext } from '@onelabs/dapp-kit';
 import { useEffect, useState } from 'react';
 
 const NETWORK_NAMES: Record<string, string> = {
@@ -7,7 +7,7 @@ const NETWORK_NAMES: Record<string, string> = {
   onechainDevnet: 'OneChain Devnet',
 };
 
-export default function SuiConnectButton() {
+export default function OneChainConnectButton() {
   const account = useCurrentAccount();
   const client = useSuiClient();
   const [octBalance, setOctBalance] = useState<string>('0');
@@ -59,13 +59,13 @@ export default function SuiConnectButton() {
       <style jsx global>{`
         /* Button chưa connect */
         .sui-connect-wrapper button[data-dapp-kit] {
-          background: linear-gradient(to right, #1c54ff, #001a61) !important;
+          background: linear-gradient(to right, #1c54ff, #001a61);
           padding: 4px 8px !important;
           color: white !important;
         }
 
         /* Button đã connect */
-        .sui-connect-wrapper [data-dapp-kit].AccountDropdownMenu_connectedAccount__div2ql0 {
+        .sui-connect-wrapper [data-dapp-kit].AccountDropdownMenu_connectedAccount__yf6co0 {
           padding: 4px 8px !important;
           background: white !important;
         }
