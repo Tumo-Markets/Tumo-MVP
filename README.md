@@ -10,7 +10,7 @@
 - **Native OneChain Integration:** Fully integrated with **OneWallet SDK** for seamless transaction signing.
 - **Strict Network Handling:** Automatically detects and enforces connection to **OneChain Testnet** (`oct test`).
 - **Real-time Trading UI:** Interactive price charts (TradingView), leverage slider (1x-20x), and position management dashboard.
-- **Clean Architecture:** Built with Next.js & TypeScript, free from multi-chain clutter (No EVM/Wagmi dependencies).
+- **Clean Architecture:** Built with Next.js & TypeScript, free from multi-chain clutter.
 
 ## 🛠 Tech Stack
 
