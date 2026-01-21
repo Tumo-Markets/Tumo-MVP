@@ -1,6 +1,6 @@
-# Tumo Markets (Frontend MVP)
+# Tumo (Frontend MVP)
 
-**Tumo Markets** is a decentralized Oracle-based Shared Liquidity Pool built natively on the **OneChain** ecosystem. This repository contains the Frontend interface for the Tumo Markets MVP, developed as part of the **OneChain Builders' Hub Grant**.
+**Tumo** is a decentralized Oracle-based Shared Liquidity Pool built natively on the **OneChain** ecosystem. This repository contains the Frontend interface for the Tumo MVP, developed as part of the **OneChain Builders' Hub Grant**.
 
 > ⚠️ **Note:** This repository is strictly for the **Frontend Interface**.
 > The Move Smart Contracts are located in a separate repository: [Tumo Contract Repo](https://github.com/Tumo-Markets/Tumo-Contract)
