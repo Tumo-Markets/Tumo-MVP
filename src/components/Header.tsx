@@ -3,7 +3,7 @@
 import { TumoLogo } from './icons';
 import { useSideMenu } from './SideMenuContext';
 import { Menu } from 'lucide-react';
-import SuiConnectButton from './Button/SuiConnectButton';
+import OneChainConnectButton from './Button/OneChainConnectButton';
 
 export default function Header() {
   const { isCollapsed, setIsMobileMenuOpen } = useSideMenu();
@@ -37,7 +37,7 @@ export default function Header() {
 
         {/* Right side - Wallet Connection */}
         {/* <ConnectOneWallet /> */}
-        <SuiConnectButton />
+        <OneChainConnectButton />
       </div>
     </header>
   );
