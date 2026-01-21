@@ -22,6 +22,7 @@ import { useChartData } from 'src/hooks/markets/useChartData';
 import { useMarketStats } from 'src/hooks/markets/useMarketStats';
 import { Popover, PopoverContent, PopoverTrigger } from 'src/components/ui/popover';
 import { BN } from 'src/utils';
+import { SkeletonLine } from 'src/components/Skeleton';
 
 export type TCandleTime = '1m' | '5m' | '15m' | '1h' | '4h' | '1d' | '1w';
 
@@ -91,7 +92,7 @@ export default function TradingViewChart({ isDisplay = true }: Props) {
   const { data: chartData, isLoading, isPending } = useChartData(selectedPair?.id, candleTime.title, 200);
 
   // Fetch market stats
-  const { data: marketStats } = useMarketStats(selectedPair?.id);
+  const { data: marketStats, isLoading: isLoadingMarketStats } = useMarketStats(selectedPair?.id);
 
   const [isSocketOpen, setIsSocketOpen] = useState(false);
   const [tooltipData, setTooltipData] = useState<TTooltipData | null>(null);
@@ -163,6 +164,15 @@ export default function TradingViewChart({ isDisplay = true }: Props) {
   useEffect(() => {
     if (!selectedPair?.id) return;
 
+    // Close existing connection if any
+    if (socketRef.current) {
+      if (socketRef.current.readyState === WebSocket.OPEN || socketRef.current.readyState === WebSocket.CONNECTING) {
+        socketRef.current.close();
+      }
+      socketRef.current = null;
+      setIsSocketOpen(false);
+    }
+
     const ws = getCandleSocket(selectedPair.id, candleTime.title);
     socketRef.current = ws;
 
@@ -191,9 +201,19 @@ export default function TradingViewChart({ isDisplay = true }: Props) {
   }, [selectedPair?.id, candleTime.title]);
 
   // Price WebSocket connection management
-
   useEffect(() => {
     if (!selectedPair?.id) return;
+
+    // Close existing connection if any
+    if (priceSocketRef.current) {
+      if (
+        priceSocketRef.current.readyState === WebSocket.OPEN ||
+        priceSocketRef.current.readyState === WebSocket.CONNECTING
+      ) {
+        priceSocketRef.current.close();
+      }
+      priceSocketRef.current = null;
+    }
 
     const priceWs = getPriceSocket(selectedPair.id);
     priceSocketRef.current = priceWs;
@@ -401,41 +421,50 @@ export default function TradingViewChart({ isDisplay = true }: Props) {
                   <>
                     <div className="flex flex-col">
                       <span className="text-[#958794] mb-0.5 text-xs md:text-sm">Price</span>
-                      <span className="font-medium text-xs md:text-sm">
-                        {formatNumber(livePrice ?? selectedPair.price, { fractionDigits: 2 })}
-                      </span>
+                      {livePrice !== null ? (
+                        <span className="font-medium text-xs md:text-sm">
+                          ${formatNumber(livePrice, { fractionDigits: 2 })}
+                        </span>
+                      ) : (
+                        <SkeletonLine className="h-4 w-20" />
+                      )}
                     </div>
                     <div className="flex flex-col">
                       <span className="text-[#958794] mb-0.5 text-xs md:text-sm">Mark Price</span>
-                      <span className="font-medium text-xs md:text-sm">
-                        {marketStats?.mark_price
-                          ? formatNumber(parseFloat(marketStats.mark_price), { fractionDigits: 2 })
-                          : formatNumber(selectedPair.markPrice, { fractionDigits: 2 })}
-                      </span>
+                      {isLoadingMarketStats || !marketStats?.mark_price ? (
+                        <SkeletonLine className="h-4 w-20" />
+                      ) : (
+                        <span className="font-medium text-xs md:text-sm">
+                          ${formatNumber(parseFloat(marketStats.mark_price), { fractionDigits: 2 })}
+                        </span>
+                      )}
                     </div>
                     <div className="flex flex-col">
                       <span className="text-[#958794] mb-0.5 text-xs md:text-sm">24H Volume</span>
-                      <span className="font-medium text-xs md:text-sm">
-                        {marketStats?.volume_24h
-                          ? formatNumber(parseFloat(marketStats.volume_24h), { fractionDigits: 2 })
-                          : selectedPair.volume24h}
-                      </span>
+                      {isLoadingMarketStats || !marketStats?.volume_24h ? (
+                        <SkeletonLine className="h-4 w-24" />
+                      ) : (
+                        <span className="font-medium text-xs md:text-sm">
+                          ${formatNumber(parseFloat(marketStats.volume_24h), { fractionDigits: 2 })}
+                        </span>
+                      )}
                     </div>
                     <div className="flex flex-col">
                       <span className="text-[#958794] mb-0.5 text-xs md:text-sm">24H Change</span>
-                      <span
-                        className={`font-medium text-xs md:text-sm ${
-                          marketStats?.price_24h_change && parseFloat(marketStats.price_24h_change) >= 0
-                            ? 'text-green-500'
-                            : 'text-red-500'
-                        }`}
-                      >
-                        {marketStats?.price_24h_change &&
-                          `${parseFloat(marketStats.price_24h_change) >= 0 ? '+' : ''}${formatNumber(
+                      {isLoadingMarketStats || !marketStats?.price_24h_change ? (
+                        <SkeletonLine className="h-4 w-16" />
+                      ) : (
+                        <span
+                          className={`font-medium text-xs md:text-sm ${
+                            parseFloat(marketStats.price_24h_change) >= 0 ? 'text-green-500' : 'text-red-500'
+                          }`}
+                        >
+                          {`${parseFloat(marketStats.price_24h_change) >= 0 ? '+' : ''}${formatNumber(
                             BN(marketStats.price_24h_change),
                             { fractionDigits: 2, suffix: '%' },
                           )}`}
-                      </span>
+                        </span>
+                      )}
                     </div>
                   </>
                 ) : (
@@ -496,7 +525,6 @@ export default function TradingViewChart({ isDisplay = true }: Props) {
           <div className="inline-flex rounded-[99px] p-1 mb-2 bg-secondary border-[0.5] border-t h-fit">
             {candleOptions?.map(option => {
               const active = option.title === candleTime.title;
-              console.log(option.title, active);
               return (
                 <div
                   className={`cursor-pointer px-2 boder ${active ? 'bg-chip' : 'text-[#958794]'}`}

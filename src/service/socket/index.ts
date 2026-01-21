@@ -12,4 +12,4 @@ export function getPriceSocket(marketId: string) {
   return new WebSocket(`wss://backend-product.futstar.fun/api/v1/ws/prices/${marketId}`);
 }
 
-export const appSocket = getMarketSocket();
+// export const appSocket = getMarketSocket();
