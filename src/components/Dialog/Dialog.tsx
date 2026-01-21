@@ -71,7 +71,7 @@ export default function Dialog({ isOpen, onClose, title, children, showCloseButt
                 damping: 30,
                 stiffness: 300,
               }}
-              className="w-full md:w-auto md:min-w-[500px] md:max-w-2xl bg-white dark:bg-black border-t-2 md:border-2 border-[#1c54ff] dark:border-[#e4e9ff] rounded-t-2xl md:rounded-2xl shadow-2xl pointer-events-auto max-h-[70vh] md:max-h-[85vh] overflow-hidden flex flex-col"
+              className="w-full md:w-auto md:min-w-[500px] md:max-w-2xl bg-white dark:bg-[#282828] border-[#1c54ff] dark:border-[#e4e9ff] rounded-t-2xl md:rounded-2xl shadow-2xl pointer-events-auto max-h-[70vh] md:max-h-[85vh] overflow-hidden flex flex-col"
               onClick={e => e.stopPropagation()}
             >
               {/* Header */}

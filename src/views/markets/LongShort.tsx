@@ -5,7 +5,7 @@ import { formatNumber } from 'src/utils/format';
 import { useSelectedPairValue } from 'src/states/markets';
 import { usePositionPreview } from 'src/hooks/usePositionPreview';
 import { Skeleton } from 'src/components/ui/skeleton';
-import { CryptoIcon } from 'src/components/crypto-icons';
+import { CryptoIcon, iconMap } from 'src/components/crypto-icons';
 import { useMarketStats } from 'src/hooks/markets/useMarketStats';
 
 type PositionType = 'long' | 'short';
@@ -101,7 +101,9 @@ export default function LongShort({ isDisplay = true }: Props) {
       {/* Amount Input */}
       <div className="rounded-xl bg-input p-2 mt-3 flex justify-between">
         <div className="flex place-items-center gap-1">
-          <CryptoIcon name={marketStats?.collateral_in || ''} />
+          {marketStats?.collateral_in && iconMap[marketStats.collateral_in || ''] && (
+            <CryptoIcon name={marketStats.collateral_in} />
+          )}
           <p>{marketStats?.collateral_in}</p>
         </div>
         <div>

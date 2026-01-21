@@ -398,7 +398,7 @@ export default function TradingViewChart({ isDisplay = true }: Props) {
                     </svg>
                   </button>
                 </PopoverTrigger>
-                <PopoverContent className="w-64 p-2 bg-secondary border-[#958794] max-h-[400px] overflow-y-auto">
+                <PopoverContent className=" w-fit p-2 bg-secondary border-[#958794] max-h-[400px] overflow-y-auto">
                   <div className="space-y-1">
                     {cryptoPairs.map(pair => (
                       <button
@@ -451,16 +451,16 @@ export default function TradingViewChart({ isDisplay = true }: Props) {
                     </div>
                     <div className="flex flex-col">
                       <span className="text-[#958794] mb-0.5 text-xs md:text-sm">24H Change</span>
-                      {isLoadingMarketStats || !marketStats?.price_24h_change ? (
+                      {isLoadingMarketStats ? (
                         <SkeletonLine className="h-4 w-16" />
                       ) : (
                         <span
                           className={`font-medium text-xs md:text-sm ${
-                            parseFloat(marketStats.price_24h_change) >= 0 ? 'text-green-500' : 'text-red-500'
+                            Number(marketStats?.price_24h_change) >= 0 ? 'text-green-500' : 'text-red-500'
                           }`}
                         >
-                          {`${parseFloat(marketStats.price_24h_change) >= 0 ? '+' : ''}${formatNumber(
-                            BN(marketStats.price_24h_change),
+                          {`${Number(marketStats?.price_24h_change) >= 0 ? '+' : ''}${formatNumber(
+                            BN(marketStats?.price_24h_change),
                             { fractionDigits: 2, suffix: '%' },
                           )}`}
                         </span>
