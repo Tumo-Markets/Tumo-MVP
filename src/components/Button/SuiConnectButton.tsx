@@ -3,9 +3,6 @@ import { ConnectButton, useCurrentAccount, useSuiClient, useSuiClientContext } f
 import { useEffect, useState } from 'react';
 
 const NETWORK_NAMES: Record<string, string> = {
-  localnet: 'Sui Localnet',
-  mainnet: 'Sui Mainnet',
-  testnet: 'Sui Testnet',
   onechainTestnet: 'OneChain Testnet',
   onechainDevnet: 'OneChain Devnet',
 };
