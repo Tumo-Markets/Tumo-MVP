@@ -30,7 +30,7 @@ export default function InformationForm() {
             name="tokenAddress"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Solana Token Address</FormLabel>
+                <FormLabel>Token Address</FormLabel>
                 <FormControl>
                   <Input placeholder="Address..." {...field} />
                 </FormControl>

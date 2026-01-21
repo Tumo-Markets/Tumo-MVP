@@ -1,11 +1,8 @@
 import { createNetworkConfig, SuiClientProvider, WalletProvider } from '@mysten/dapp-kit';
-import { getFullnodeUrl } from '@mysten/sui/client';
 import { ReactNode } from 'react';
 import '@mysten/dapp-kit/dist/index.css';
 
 const { networkConfig } = createNetworkConfig({
-  localnet: { url: getFullnodeUrl('localnet') },
-  mainnet: { url: getFullnodeUrl('mainnet') },
   onechainTestnet: {
     url: 'https://rpc-testnet.onelabs.cc:443',
   },

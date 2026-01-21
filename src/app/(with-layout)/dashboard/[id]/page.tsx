@@ -247,10 +247,9 @@ export default function CreatedMarketPage() {
                 </div>
               </div>
 
-              {/* Solana Blink */}
               <div className="flex items-center justify-between p-4 rounded-lg bg-black/30 border border-[#958794]/20">
                 <div>
-                  <p className="text-sm text-tertiary-foreground mb-1">Solana Blink:</p>
+                  <p className="text-sm text-tertiary-foreground mb-1">Blink:</p>
                   <a
                     href={`https://${blinksLink}`}
                     target="_blank"
