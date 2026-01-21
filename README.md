@@ -1,4 +1,24 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Tumo Markets (Frontend MVP)
+
+**Tumo Markets** is a decentralized Oracle-based Shared Liquidity Pool built natively on the **OneChain** ecosystem. This repository contains the Frontend interface for the Tumo Markets MVP, developed as part of the **OneChain Builders' Hub Grant**.
+
+> ⚠️ **Note:** This repository is strictly for the **Frontend Interface**.
+> The Move Smart Contracts are located in a separate repository: [Tumo Contract Repo](https://github.com/Tumo-Markets/Tumo-Contract)
+
+## 🚀 Key Features (Milestone 1)
+
+- **Native OneChain Integration:** Fully integrated with **OneWallet SDK** for seamless transaction signing.
+- **Strict Network Handling:** Automatically detects and enforces connection to **OneChain Testnet** (`oct test`).
+- **Real-time Trading UI:** Interactive price charts (TradingView), leverage slider (1x-20x), and position management dashboard.
+- **Clean Architecture:** Built with Next.js & TypeScript, free from multi-chain clutter (No EVM/Wagmi dependencies).
+
+## 🛠 Tech Stack
+
+- **Framework:** Next.js 14 (App Router)
+- **Language:** TypeScript
+- **Styling:** Tailwind CSS
+- **Wallet Connection:** **OneWallet SDK** (Native Adapter)
+- **State Management:** Zustand / React Context
 
 ## Prerequisites
 
