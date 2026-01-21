@@ -1,10 +1,8 @@
 'use client';
 
 import { TumoLogo } from './icons';
-import SolanaConnectButton from './Button/SolanaConnectButton';
 import { useSideMenu } from './SideMenuContext';
 import { Menu } from 'lucide-react';
-import ConnectOneWallet from './Button/EVMConnectButton';
 import SuiConnectButton from './Button/SuiConnectButton';
 
 export default function Header() {
@@ -38,7 +36,6 @@ export default function Header() {
         </div>
 
         {/* Right side - Wallet Connection */}
-        {/* <SolanaConnectButton /> */}
         {/* <ConnectOneWallet /> */}
         <SuiConnectButton />
       </div>

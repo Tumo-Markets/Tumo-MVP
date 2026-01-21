@@ -366,7 +366,7 @@ export default function TradingViewChart({ isDisplay = true }: Props) {
                 <PopoverTrigger asChild className="max-w-[170px]">
                   <button
                     disabled={isLoadingPairs || cryptoPairs.length === 0}
-                    className="bg-secondary border border-[#958794] rounded-lg px-4 py-2 text-sm md:text-base font-medium cursor-pointer hover:bg-opacity-80 transition-colors focus:outline-none focus:ring-2 focus:ring-[#958794] focus:ring-opacity-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                    className="bg-secondary rounded-lg px-4 py-2 text-sm md:text-base font-medium cursor-pointer hover:bg-opacity-80 transition-colors focus:outline-none focus:ring-2 focus:ring-[#958794] focus:ring-opacity-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                   >
                     {isLoadingPairs
                       ? 'Loading...'
@@ -424,7 +424,7 @@ export default function TradingViewChart({ isDisplay = true }: Props) {
                     <div className="flex flex-col">
                       <span className="text-[#958794] mb-0.5 text-xs md:text-sm">24H Change</span>
                       <span
-                        className={`font-medium text-xs md:text-sm${
+                        className={`font-medium text-xs md:text-sm ${
                           marketStats?.price_24h_change && parseFloat(marketStats.price_24h_change) >= 0
                             ? 'text-green-500'
                             : 'text-red-500'

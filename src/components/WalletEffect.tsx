@@ -1,6 +1,5 @@
 'use client';
 
-// import { useWallet } from '@solana/wallet-adapter-react';
 import axios from 'axios';
 import { useEffect } from 'react';
 import { apiUrl } from 'src/service/api/apiUrl';
