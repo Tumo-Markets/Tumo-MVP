@@ -14,30 +14,31 @@ export default function Positions() {
         <TableHeader>
           <TableRow className="hover:bg-background">
             <TableHead className="w-[150px]">POSITION</TableHead>
-            <TableHead className="w-[150px]">SIZE</TableHead>
+            <TableHead className="w-[100px]">SIZE</TableHead>
             <TableHead>NET VALUE</TableHead>
             <TableHead>COLLATERAL</TableHead>
             <TableHead>ENTRY PRICE</TableHead>
             <TableHead>MARK PRICE</TableHead>
-            <TableHead className="text-right">LIQ. PRICE</TableHead>
+            <TableHead>LIQ. PRICE</TableHead>
+            <TableHead className="text-center">ACTION</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {isLoading ? (
             <TableRow>
-              <TableCell colSpan={7} className="text-center text-[12px] py-4">
+              <TableCell colSpan={8} className="text-center text-[12px] py-4">
                 Loading positions...
               </TableCell>
             </TableRow>
           ) : error ? (
             <TableRow>
-              <TableCell colSpan={7} className="text-center text-[12px] py-4 text-red-500">
+              <TableCell colSpan={8} className="text-center text-[12px] py-4 text-red-500">
                 Error: {error}
               </TableCell>
             </TableRow>
           ) : positions.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={7} className="text-center text-[12px] py-4">
+              <TableCell colSpan={8} className="text-center text-[12px] py-4">
                 No open positions
               </TableCell>
             </TableRow>
@@ -65,8 +66,17 @@ export default function Positions() {
                 <TableCell>{formatNumber(parseFloat(position.collateral), { fractionDigits: 4 })}</TableCell>
                 <TableCell>{formatNumber(parseFloat(position.entry_price), { fractionDigits: 4 })}</TableCell>
                 <TableCell>{formatNumber(parseFloat(position.current_price), { fractionDigits: 4 })}</TableCell>
-                <TableCell className="text-right">
-                  {formatNumber(parseFloat(position.liquidation_price), { fractionDigits: 4 })}
+                <TableCell>{formatNumber(parseFloat(position.liquidation_price), { fractionDigits: 4 })}</TableCell>
+                <TableCell className="text-center">
+                  <button
+                    className="px-3 py-1 text-xs font-medium text-white bg-red-500 hover:bg-red-600 rounded transition-colors"
+                    onClick={() => {
+                      // TODO: Implement close position logic
+                      console.log('Close position:', position.position_id);
+                    }}
+                  >
+                    Close
+                  </button>
                 </TableCell>
               </TableRow>
             ))
