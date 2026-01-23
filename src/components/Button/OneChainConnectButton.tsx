@@ -9,65 +9,31 @@ import {
 } from '@onelabs/dapp-kit';
 import { useEffect, useState } from 'react';
 import Dialog from '../Dialog/Dialog';
+import { useTokenBalance } from 'src/hooks/useTokenBalance';
+import { cn } from 'src/lib/utils';
 
 const NETWORK_NAMES: Record<string, string> = {
   onechainTestnet: 'OneChain Testnet',
   onechainDevnet: 'OneChain Devnet',
 };
 
-export default function OneChainConnectButton() {
+export default function OneChainConnectButton({ className }: { className?: string }) {
   const account = useCurrentAccount();
-  const client = useSuiClient();
   const wallets = useWallets();
   const { mutate: connect } = useConnectWallet();
   const { mutate: disconnect } = useDisconnectWallet();
 
-  const [octBalance, setOctBalance] = useState<string>('0');
-  const [loading, setLoading] = useState(false);
+  // OCT Token Contract Address - thay bằng địa chỉ token OCT thực tế
+  const OCT_TOKEN_TYPE = '0x2::oct::OCT'; // Cần địa chỉ chính xác
+
+  const { balance: octBalance, isLoading: loading } = useTokenBalance(OCT_TOKEN_TYPE);
+
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [showAccountMenu, setShowAccountMenu] = useState(false);
 
   const network = useSuiClientContext();
 
-  // OCT Token Contract Address - thay bằng địa chỉ token OCT thực tế
-  const OCT_TOKEN_TYPE = '0x2::oct::OCT'; // Cần địa chỉ chính xác
-
   const networkName = NETWORK_NAMES[network.network] || network.network || 'Unknown Network';
-
-  useEffect(() => {
-    async function fetchBalance() {
-      if (!account?.address) {
-        setOctBalance('0');
-        return;
-      }
-
-      setLoading(true);
-      try {
-        // Get all balances của account
-        const balances = await client.getAllBalances({
-          owner: account.address,
-        });
-
-        // Tìm OCT token trong mảng balances
-        const octBalance = balances.find(balance => balance.coinType === OCT_TOKEN_TYPE);
-
-        if (octBalance) {
-          // Convert từ smallest unit (thường là 9 decimals cho Sui tokens)
-          const balance = (Number(octBalance.totalBalance) / 1_000_000_000).toFixed(0);
-          setOctBalance(balance);
-        } else {
-          setOctBalance('0');
-        }
-      } catch (error) {
-        console.error('Error fetching OCT balance:', error);
-        setOctBalance('0');
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchBalance();
-  }, [account?.address, client]);
 
   const handleConnect = (wallet: any) => {
     connect(
@@ -94,7 +60,7 @@ export default function OneChainConnectButton() {
   };
 
   return (
-    <div className="sui-connect-wrapper flex items-center gap-3">
+    <div className={cn(className, 'sui-connect-wrapper flex items-center gap-3')}>
       {account && (
         <div className="flex items-center gap-4">
           <div className="rounded-lg border px-2 py-1">
@@ -110,7 +76,10 @@ export default function OneChainConnectButton() {
       {!account ? (
         <button
           onClick={() => setIsDialogOpen(true)}
-          className="px-2 py-1 text-base font-medium text-white rounded-lg transition-all duration-200 hover:opacity-90 active:scale-95"
+          className={cn(
+            'px-2 py-1 text-base font-medium text-white rounded-lg transition-all duration-200 hover:opacity-90 active:scale-95',
+            className,
+          )}
           style={{
             background: 'linear-gradient(to right, #1c54ff, #001a61)',
           }}

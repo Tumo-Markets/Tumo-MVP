@@ -17,7 +17,6 @@ export interface Position {
 }
 
 export function usePositionsWebSocket(userAddress: string | undefined) {
-  console.log(userAddress);
   const [positions, setPositions] = useState<Position[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -33,7 +32,7 @@ export function usePositionsWebSocket(userAddress: string | undefined) {
 
     const connectWebSocket = () => {
       try {
-        const wsUrl = `wss://backend-product.futstar.fun/api/v1/ws/positions/${'0x123456'}`;
+        const wsUrl = `wss://backend-product.futstar.fun/api/v1/ws/positions/${userAddress}`;
         console.log('Connecting to WebSocket:', wsUrl);
 
         const ws = new WebSocket(wsUrl);
@@ -48,7 +47,6 @@ export function usePositionsWebSocket(userAddress: string | undefined) {
         ws.onmessage = event => {
           try {
             const data = JSON.parse(event.data);
-            console.log('Positions data received:', data);
 
             // Handle positions_update message type
             if (data.type === 'positions_update' && data.positions && Array.isArray(data.positions)) {

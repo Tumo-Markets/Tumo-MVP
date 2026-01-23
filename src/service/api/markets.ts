@@ -12,6 +12,9 @@ export type TMarketApiResponse = {
     liquidation_fee_rate: string;
     funding_rate_interval: number;
     max_funding_rate: string;
+    coinTradeType: string;
+    marketCoinTradeID: string;
+    priceFeedCoinTradeID: string;
     id: number;
     status: string;
     total_long_positions: string;
@@ -37,6 +40,9 @@ export type TCryptoPair = {
   fundingRate: string;
   priceChange24h: string;
   maxLeverage: number;
+  coinTradeType: string;
+  marketCoinTradeID: string;
+  priceFeedCoinTradeID: string;
 };
 
 const MARKETS_API_URL = 'https://backend-product.futstar.fun/api/v1/markets/';
@@ -68,16 +74,29 @@ export const fetchCryptoPairs = async (page = 1, pageSize = 20): Promise<TCrypto
 
     const data: TMarketApiResponse = await response.json();
 
-    const pairs: TCryptoPair[] = data.items.map(item => ({
-      id: item.market_id,
-      symbol: item.symbol,
-      price: 0, // Will be updated from real-time data
-      markPrice: 0, // Will be updated from real-time data
-      volume24h: `$${(parseFloat(item.total_volume) / 1_000_000).toFixed(1)}M`,
-      fundingRate: `${(parseFloat(item.current_funding_rate) * 100).toFixed(4)}%`,
-      priceChange24h: '+0.00%', // Will be calculated from real-time data
-      maxLeverage: parseFloat(item.max_leverage),
-    }));
+    const pairs: TCryptoPair[] = data.items.map(item => {
+      // Extract base token from symbol (e.g., 'BTC/USDH' -> 'BTC')
+      const baseToken = item.symbol.split('/')[0];
+      const baseTokenLower = baseToken.toLowerCase();
+      const baseTokenUpper = baseToken.toUpperCase();
+
+      // Format coinTradeType as: address::token::TOKEN
+      const formattedCoinTradeType = `${item.coinTradeType}::${baseTokenLower}::${baseTokenUpper}`;
+
+      return {
+        id: item.market_id,
+        symbol: item.symbol,
+        price: 0, // Will be updated from real-time data
+        markPrice: 0, // Will be updated from real-time data
+        volume24h: `$${(parseFloat(item.total_volume) / 1_000_000).toFixed(1)}M`,
+        fundingRate: `${(parseFloat(item.current_funding_rate) * 100).toFixed(4)}%`,
+        priceChange24h: '+0.00%', // Will be calculated from real-time data
+        maxLeverage: parseFloat(item.max_leverage),
+        coinTradeType: formattedCoinTradeType,
+        marketCoinTradeID: item.marketCoinTradeID,
+        priceFeedCoinTradeID: item.priceFeedCoinTradeID,
+      };
+    });
 
     return pairs;
   } catch (error) {

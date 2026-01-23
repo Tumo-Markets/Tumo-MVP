@@ -7,6 +7,26 @@ import { usePositionPreview } from 'src/hooks/usePositionPreview';
 import { Skeleton } from 'src/components/ui/skeleton';
 import { CryptoIcon, iconMap } from 'src/components/crypto-icons';
 import { useMarketStats } from 'src/hooks/markets/useMarketStats';
+import useAsyncExecute from 'src/hooks/useAsyncExecute';
+import { PaginatedCoins } from '@onelabs/sui/client';
+import { Transaction } from '@onelabs/sui/transactions';
+import {
+  BTC_TYPE,
+  getCoinObject,
+  LIQUIDITY_POOL_ID,
+  MARKET_BTC_ID,
+  OCT_TYPE,
+  PACKAGE_ID,
+  PRICE_FEED_BTC_ID,
+  PRICE_FEED_ID,
+  USDH_TYPE,
+} from 'src/constant/contracts';
+import { useCurrentAccount, useSuiClient } from '@onelabs/dapp-kit';
+import { useSponsoredTransaction } from 'src/hooks/useSponsoredTransaction';
+import { useTokenBalance } from 'src/hooks/useTokenBalance';
+import { getTokenInfoBySymbol } from 'src/constant/tokenInfo';
+import { postOpenPosition } from 'src/service/api/positions';
+import OneChainConnectButton from 'src/components/Button/OneChainConnectButton';
 
 type PositionType = 'long' | 'short';
 
@@ -15,13 +35,22 @@ interface Props {
 }
 
 export default function LongShort({ isDisplay = true }: Props) {
+  const account = useCurrentAccount();
   const selectedPair = useSelectedPairValue();
   const [positionType, setPositionType] = useState<PositionType>('long');
   const [amount, setAmount] = useState('');
   const maxLeverage = selectedPair?.maxLeverage || 50;
   const [leverage, setLeverage] = useState(Math.min(13, maxLeverage));
-  const [availableBalance] = useState(0.0);
-  const [currentPosition] = useState(0.0);
+  const { executeSponsoredTransaction, isLoading: isSponsoredTxLoading } = useSponsoredTransaction();
+
+  // Get token info and balance for collateral
+  const { data: marketStats } = useMarketStats(selectedPair?.id);
+  const collateralToken = marketStats?.collateral_in ? getTokenInfoBySymbol(marketStats.collateral_in) : null;
+  const {
+    balance: availableBalance,
+    isLoading: isBalanceLoading,
+    refetch: refetchBalance,
+  } = useTokenBalance(collateralToken?.getAddress() || '');
 
   // Debounced values for API calls
   const [debouncedAmount, setDebouncedAmount] = useState(amount);
@@ -46,7 +75,7 @@ export default function LongShort({ isDisplay = true }: Props) {
     size: debouncedAmount,
   });
 
-  const { data: marketStats } = useMarketStats(selectedPair?.id);
+  const { asyncExecute, loading } = useAsyncExecute();
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -61,12 +90,111 @@ export default function LongShort({ isDisplay = true }: Props) {
     setLeverage(Math.min(newLeverage, maxLeverage));
   };
 
-  const handleSubmit = () => {
-    console.log(`${positionType.toUpperCase()} order:`, {
-      amount,
-      leverage,
+  function buildOpenPositionTx(
+    userPublickey: string,
+    direction: number,
+    size: bigint,
+    leverage: number,
+    allCoins: PaginatedCoins,
+    coinTradeType: string,
+    marketCoinTradeID: string,
+    priceFeedCoinTradeID: string,
+  ): Transaction {
+    const tx = new Transaction();
+    let coinsToMerge = allCoins.data;
+    let amount_collateral = size / BigInt(leverage);
+
+    if (coinsToMerge.length >= 2) {
+      // Sort coins by balance (optional, but good practice to merge smaller into larger)
+      coinsToMerge.sort((a, b) => parseInt(b.balance) - parseInt(a.balance));
+
+      const primaryCoin = coinsToMerge[0];
+      const coinsToCombine = coinsToMerge.slice(1);
+
+      // 2. Create a new transaction block
+      tx.setSender(userPublickey);
+
+      // 3. Merge the coins
+      // The first coin is the destination; the rest are sources
+      tx.mergeCoins(
+        tx.object(primaryCoin.coinObjectId),
+        coinsToCombine.map(coin => tx.object(coin.coinObjectId)),
+      );
+    }
+    let [paymentCollateral, _] = tx.splitCoins(coinsToMerge[0].coinObjectId, [amount_collateral]);
+
+    tx.moveCall({
+      target: `${PACKAGE_ID}::tumo_markets_core::open_position`,
+      arguments: [
+        tx.object(marketCoinTradeID),
+        tx.object(LIQUIDITY_POOL_ID),
+        paymentCollateral,
+        tx.object(priceFeedCoinTradeID),
+        tx.pure.u64(size),
+        tx.pure.u8(direction),
+        tx.object('0x6'),
+      ],
+      typeArguments: [USDH_TYPE, coinTradeType],
     });
-  };
+    return tx;
+  }
+
+  function handleSubmit() {
+    asyncExecute({
+      fn: async notify => {
+        if (account?.address && collateralToken && selectedPair) {
+          const userPublickey = account?.address;
+          const direction = positionType === 'long' ? 0 : 1;
+
+          // Get market config from selected pair
+          const { coinTradeType, marketCoinTradeID, priceFeedCoinTradeID } = selectedPair;
+          if (!coinTradeType || !marketCoinTradeID || !priceFeedCoinTradeID) {
+            throw new Error(`Market configuration not found for pair: ${selectedPair.id}`);
+          }
+
+          // Convert amount to smallest unit using token's decimals
+          const size = BigInt(Math.floor(parseFloat(amount) * 10 ** collateralToken.getDecimals()));
+          const coin = await getCoinObject(collateralToken.getAddress(), userPublickey);
+          console.log(userPublickey, direction, size, leverage, coin);
+          console.log(coinTradeType, marketCoinTradeID, priceFeedCoinTradeID);
+          // Build transaction
+          let transaction = buildOpenPositionTx(
+            userPublickey,
+            direction,
+            size,
+            leverage,
+            coin,
+            coinTradeType,
+            marketCoinTradeID,
+            priceFeedCoinTradeID,
+          );
+
+          // Execute sponsored transaction
+          const result = await executeSponsoredTransaction(transaction);
+
+          console.log('Transaction executed:', result);
+          console.log('Digest:', result.digest);
+
+          // Post position data to backend
+          await postOpenPosition({
+            market_id: selectedPair?.id || '',
+            user_address: userPublickey,
+            side: positionType,
+            size: Number(amount),
+            leverage: leverage,
+            entry_price: previewData?.entry_price ? parseFloat(previewData.entry_price) : 0,
+            tx_hash: result.digest,
+            block_number: 0,
+          });
+
+          return result;
+        }
+      },
+      onSuccess: () => {
+        refetchBalance();
+      },
+    });
+  }
 
   return (
     <div
@@ -109,15 +237,9 @@ export default function LongShort({ isDisplay = true }: Props) {
         <div>
           <div className="flex justify-end mb-0 place-items-center gap-1 ">
             <span className="text-xs leading-2 text-secondary-foreground">
-              Balance:{' '}
-              <span className="text-xs">
-                {formatNumber(availableBalance, { fractionDigits: 2 })} {previewData?.collateral_in}
-              </span>
+              Balance: <span className="text-xs">{isBalanceLoading ? '...' : availableBalance}</span>
             </span>
-            <p
-              onClick={() => setAmount(availableBalance.toString())}
-              className="text-[#3571ee] text-xs cursor-pointer leading-2"
-            >
+            <p onClick={() => setAmount(availableBalance)} className="text-[#3571ee] text-xs cursor-pointer leading-2">
               Max
             </p>
           </div>
@@ -254,16 +376,20 @@ export default function LongShort({ isDisplay = true }: Props) {
       </div>
 
       {/* Submit Button */}
-      <button
-        onClick={handleSubmit}
-        className={`w-full ${
-          !isDisplay ? 'p-2' : 'p-3'
-        } rounded-lg font-bold text-white transition-all hover:opacity-90 mt-3 ${
-          positionType === 'long' ? 'bg-[#00d4aa]' : 'bg-[#ff4d6a]'
-        }`}
-      >
-        {positionType.toUpperCase()}
-      </button>
+      {account?.address ? (
+        <button
+          onClick={handleSubmit}
+          className={`w-full ${
+            !isDisplay ? 'p-2' : 'p-3'
+          } rounded-lg font-bold text-white transition-all hover:opacity-90 mt-3 ${
+            positionType === 'long' ? 'bg-[#00d4aa]' : 'bg-[#ff4d6a]'
+          }`}
+        >
+          {positionType.toUpperCase()}
+        </button>
+      ) : (
+        <OneChainConnectButton className="w-full mt-3" />
+      )}
     </div>
   );
 }
