@@ -2,11 +2,80 @@
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from 'shadcn/table';
 import { useCurrentAccount } from '@onelabs/dapp-kit';
 import { usePositionsWebSocket } from 'src/hooks/usePositionsWebSocket';
+import { useSponsoredTransaction } from 'src/hooks/useSponsoredTransaction';
 import { formatNumber } from 'src/utils/format';
+import useAsyncExecute from 'src/hooks/useAsyncExecute';
+import {
+  BTC_TYPE,
+  getCoinObject,
+  LIQUIDITY_POOL_ID,
+  MARKET_BTC_ID,
+  PACKAGE_ID,
+  PRICE_FEED_BTC_ID,
+  USDH_TYPE,
+} from 'src/constant/contracts';
+import { Transaction } from '@onelabs/sui/transactions';
+import { postClosePosition } from 'src/service/api/positions';
 
 export default function Positions() {
   const account = useCurrentAccount();
   const { positions, isLoading, error } = usePositionsWebSocket(account?.address);
+  const { asyncExecute } = useAsyncExecute();
+  const { executeSponsoredTransaction, isLoading: isSponsoredTxLoading } = useSponsoredTransaction();
+
+  function buildClosePosition(
+    userPublickey: string,
+    marketCoinTrade: string,
+    priceFeedCoinTrade: string,
+    coinTradeType: string,
+  ): Transaction {
+    const tx = new Transaction();
+
+    const coin = tx.moveCall({
+      target: `${PACKAGE_ID}::tumo_markets_core::close_position`,
+      arguments: [
+        tx.object(marketCoinTrade),
+        tx.object(LIQUIDITY_POOL_ID),
+        tx.object(priceFeedCoinTrade),
+        tx.object('0x6'),
+      ],
+      typeArguments: [USDH_TYPE, coinTradeType],
+    });
+    tx.transferObjects([coin], userPublickey);
+    return tx;
+  }
+  function handleClose() {
+    asyncExecute({
+      fn: async notify => {
+        if (account?.address && positions.length > 0) {
+          const userPublickey = account?.address;
+
+          // Build transaction
+          let transaction = buildClosePosition(userPublickey, MARKET_BTC_ID, PRICE_FEED_BTC_ID, BTC_TYPE);
+          console.log(transaction);
+          // Execute sponsored transaction
+          const result = await executeSponsoredTransaction(transaction);
+          console.log(result);
+          console.log('Transaction executed:', result);
+          console.log('Digest:', result.digest);
+
+          // Post close position data to backend for ALL positions
+          await Promise.all(
+            positions.map(position =>
+              postClosePosition({
+                position_id: position.position_id,
+                exit_price: position.current_price,
+                tx_hash: result.digest,
+                status: 'closed',
+              }),
+            ),
+          );
+
+          return result;
+        }
+      },
+    });
+  }
 
   return (
     <div className="mt-4 border border-border rounded-lg p-4 bg-background">
@@ -70,10 +139,7 @@ export default function Positions() {
                 <TableCell className="text-center">
                   <button
                     className="px-3 py-1 text-xs font-medium text-white bg-red-500 hover:bg-red-600 rounded transition-colors"
-                    onClick={() => {
-                      // TODO: Implement close position logic
-                      console.log('Close position:', position.position_id);
-                    }}
+                    onClick={handleClose}
                   >
                     Close
                   </button>

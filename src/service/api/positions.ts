@@ -37,3 +37,31 @@ export const getPositionPreview = async (payload: PositionPreviewRequest): Promi
   const response = await axiosClient.post<PositionPreviewResponse>(`${BASE_URL}/positions/preview`, payload);
   return response.data;
 };
+
+export interface OpenPositionPayload {
+  market_id: string;
+  user_address: string;
+  side: 'long' | 'short';
+  size: number;
+  leverage: number;
+  entry_price: number;
+  tx_hash: string;
+  block_number: number;
+}
+
+export const postOpenPosition = async (payload: OpenPositionPayload) => {
+  const response = await axiosClient.post(`${BASE_URL}/positions/open`, payload);
+  return response.data;
+};
+
+export interface ClosePositionPayload {
+  position_id: string;
+  exit_price: string;
+  tx_hash: string;
+  status: 'closed';
+}
+
+export const postClosePosition = async (payload: ClosePositionPayload) => {
+  const response = await axiosClient.post(`${BASE_URL}/positions/close`, payload);
+  return response.data;
+};
