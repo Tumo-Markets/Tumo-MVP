@@ -40,7 +40,7 @@ export default function LongShort({ isDisplay = true }: Props) {
   const [positionType, setPositionType] = useState<PositionType>('long');
   const [amount, setAmount] = useState('');
   const maxLeverage = selectedPair?.maxLeverage || 0;
-  const [leverage, setLeverage] = useState(Math.min(2, maxLeverage));
+  const [leverage, setLeverage] = useState(2);
   const { executeSponsoredTransaction, isLoading: isSponsoredTxLoading } = useSponsoredTransaction();
 
   // Get token info and balance for collateral
