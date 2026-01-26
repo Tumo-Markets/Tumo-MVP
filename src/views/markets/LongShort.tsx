@@ -77,6 +77,12 @@ export default function LongShort({ isDisplay = true }: Props) {
 
   const { asyncExecute, loading } = useAsyncExecute();
 
+  const checkActiveButton = useMemo(() => {
+    const numAmount = parseFloat(amount);
+    const numBalance = parseFloat(availableBalance);
+    return numAmount > 0 && numAmount <= numBalance;
+  }, [amount, availableBalance]);
+
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     // Allow only numbers and decimal point
@@ -379,11 +385,12 @@ export default function LongShort({ isDisplay = true }: Props) {
       {account?.address ? (
         <button
           onClick={handleSubmit}
+          disabled={!checkActiveButton || loading}
           className={`w-full ${
             !isDisplay ? 'p-2' : 'p-3'
           } rounded-lg font-bold text-white transition-all hover:opacity-90 mt-3 ${
             positionType === 'long' ? 'bg-[#00d4aa]' : 'bg-[#ff4d6a]'
-          }`}
+          } disabled:opacity-50 disabled:cursor-not-allowed`}
         >
           {positionType.toUpperCase()}
         </button>
