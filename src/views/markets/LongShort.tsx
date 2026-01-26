@@ -39,8 +39,8 @@ export default function LongShort({ isDisplay = true }: Props) {
   const selectedPair = useSelectedPairValue();
   const [positionType, setPositionType] = useState<PositionType>('long');
   const [amount, setAmount] = useState('');
-  const maxLeverage = selectedPair?.maxLeverage || 50;
-  const [leverage, setLeverage] = useState(Math.min(13, maxLeverage));
+  const maxLeverage = selectedPair?.maxLeverage || 0;
+  const [leverage, setLeverage] = useState(Math.min(2, maxLeverage));
   const { executeSponsoredTransaction, isLoading: isSponsoredTxLoading } = useSponsoredTransaction();
 
   // Get token info and balance for collateral
@@ -285,8 +285,8 @@ export default function LongShort({ isDisplay = true }: Props) {
             [&::-moz-range-thumb]:cursor-pointer"
           style={{
             background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${
-              (leverage / maxLeverage) * 100
-            }%, rgba(255,255,255,0.1) ${(leverage / maxLeverage) * 100}%, rgba(255,255,255,0.1) 100%)`,
+              ((leverage - 1) / (maxLeverage - 1)) * 100
+            }%, rgba(255,255,255,0.1) ${((leverage - 1) / (maxLeverage - 1)) * 100}%, rgba(255,255,255,0.1) 100%)`,
           }}
         />
         <div className="flex justify-between text-xs text-tertiary-foreground mt-1">
