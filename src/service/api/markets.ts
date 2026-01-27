@@ -22,6 +22,8 @@ export type TMarketApiResponse = {
     total_volume: string;
     current_funding_rate: string;
     last_funding_update: string;
+    market_token: string;
+    collateral_token: string;
     created_at: string;
     updated_at: string;
   }>;
@@ -43,6 +45,8 @@ export type TCryptoPair = {
   coinTradeType: string;
   marketCoinTradeID: string;
   priceFeedCoinTradeID: string;
+  marketToken: string;
+  collateralToken: string;
 };
 
 const MARKETS_API_URL = 'https://backend-product.futstar.fun/api/v1/markets/';
@@ -95,6 +99,8 @@ export const fetchCryptoPairs = async (page = 1, pageSize = 20): Promise<TCrypto
         coinTradeType: formattedCoinTradeType,
         marketCoinTradeID: item.marketCoinTradeID,
         priceFeedCoinTradeID: item.priceFeedCoinTradeID,
+        collateralToken: item.collateral_token,
+        marketToken: item.market_token,
       };
     });
 

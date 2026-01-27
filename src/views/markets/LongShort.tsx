@@ -27,6 +27,7 @@ import { useTokenBalance } from 'src/hooks/useTokenBalance';
 import { getTokenInfoBySymbol } from 'src/constant/tokenInfo';
 import { postOpenPosition } from 'src/service/api/positions';
 import OneChainConnectButton from 'src/components/Button/OneChainConnectButton';
+import { BN } from 'src/utils';
 
 type PositionType = 'long' | 'short';
 
@@ -39,8 +40,10 @@ export default function LongShort({ isDisplay = true }: Props) {
   const selectedPair = useSelectedPairValue();
   const [positionType, setPositionType] = useState<PositionType>('long');
   const [amount, setAmount] = useState('');
+  const [amount2, setAmount2] = useState('');
+  const [activeField, setActiveField] = useState<'amount1' | 'amount2'>('amount1');
   const maxLeverage = selectedPair?.maxLeverage || 0;
-  const [leverage, setLeverage] = useState(2);
+  const [leverage, setLeverage] = useState(1);
   const { executeSponsoredTransaction, isLoading: isSponsoredTxLoading } = useSponsoredTransaction();
 
   // Get token info and balance for collateral
@@ -54,26 +57,48 @@ export default function LongShort({ isDisplay = true }: Props) {
 
   // Debounced values for API calls
   const [debouncedAmount, setDebouncedAmount] = useState(amount);
+  const [debouncedAmount2, setDebouncedAmount2] = useState(amount2);
   const [debouncedLeverage, setDebouncedLeverage] = useState(leverage);
   const [debouncedPositionType, setDebouncedPositionType] = useState(positionType);
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       setDebouncedAmount(amount);
+      setDebouncedAmount2(amount2);
       setDebouncedLeverage(leverage);
       setDebouncedPositionType(positionType);
     }, 500);
 
     return () => clearTimeout(timeoutId);
-  }, [amount, leverage, positionType]);
+  }, [amount, amount2, leverage, positionType]);
+
+  // Determine token type and size based on active field
+  const tokenType = activeField === 'amount2' ? 'market_token' : 'collateral_token';
+  const inputSize = activeField === 'amount2' ? debouncedAmount2 : debouncedAmount;
 
   // Use the TanStack Query hook
   const { data: previewData, isLoading: isLoadingPreview } = usePositionPreview({
     leverage: debouncedLeverage.toString(),
     market_id: selectedPair?.id || 'bnb-usdc-perp',
     side: debouncedPositionType,
-    size: debouncedAmount,
+    size: inputSize,
+    token_type: tokenType,
   });
+
+  // Auto-fill the other amount field based on converted_size from preview
+  useEffect(() => {
+    if (previewData?.converted_size) {
+      const convertedValue = BN(previewData.converted_size).toFixed(6);
+      // If user is typing in amount1, set amount2
+      if (activeField === 'amount1') {
+        setAmount2(convertedValue);
+      }
+      // If user is typing in amount2, set amount1
+      else if (activeField === 'amount2') {
+        setAmount(convertedValue);
+      }
+    }
+  }, [previewData?.converted_size, activeField]);
 
   const { asyncExecute, loading } = useAsyncExecute();
 
@@ -88,6 +113,16 @@ export default function LongShort({ isDisplay = true }: Props) {
     // Allow only numbers and decimal point
     if (value === '' || /^\d*\.?\d*$/.test(value)) {
       setAmount(value);
+      setActiveField('amount1');
+    }
+  };
+
+  const handleAmountChange2 = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    // Allow only numbers and decimal point
+    if (value === '' || /^\d*\.?\d*$/.test(value)) {
+      setAmount2(value);
+      setActiveField('amount2');
     }
   };
 
@@ -233,12 +268,12 @@ export default function LongShort({ isDisplay = true }: Props) {
       </div>
 
       {/* Amount Input */}
-      <div className="rounded-xl bg-input p-2 mt-3 flex justify-between">
+      <div className="rounded-xl bg-input p-2 mt-3 flex justify-between min-h-[70px]">
         <div className="flex place-items-center gap-1">
-          {marketStats?.collateral_in && iconMap[marketStats.collateral_in || ''] && (
-            <CryptoIcon name={marketStats.collateral_in} />
+          {selectedPair?.collateralToken && iconMap[selectedPair.collateralToken || ''] && (
+            <CryptoIcon name={selectedPair.collateralToken} />
           )}
-          <p>{marketStats?.collateral_in}</p>
+          <p>{selectedPair?.collateralToken}</p>
         </div>
         <div>
           <div className="flex justify-end mb-0 place-items-center gap-1 ">
@@ -257,6 +292,30 @@ export default function LongShort({ isDisplay = true }: Props) {
             placeholder="0.0"
           />
         </div>
+      </div>
+
+      <div className="rounded-xl bg-input p-2 mt-3 flex justify-between min-h-[70px]">
+        <div className="flex place-items-center gap-1">
+          {/* {selectedPair?.marketToken && iconMap[selectedPair.marketToken || ''] && (
+            <CryptoIcon name={selectedPair.marketToken} />
+          )} */}
+          <p>{selectedPair?.marketToken}</p>
+        </div>
+        {/* <div className="flex justify-end mb-0 place-items-center gap-1 ">
+            <span className="text-xs leading-2 text-secondary-foreground">
+              Balance: <span className="text-xs">{isBalanceLoading ? '...' : availableBalance}</span>
+            </span>
+            <p onClick={() => setAmount2(availableBalance)} className="text-[#3571ee] text-xs cursor-pointer leading-2">
+              Max
+            </p>
+          </div> */}
+        <input
+          type="text"
+          value={amount2}
+          onChange={handleAmountChange2}
+          className="text-right text-[20px] border-none w-full py-1 mt-0 bg-secondary/30 border border-[#958794]/30 rounded-lg text-foreground focus:outline-none focus:border-[#958794] transition-colors"
+          placeholder="0.0"
+        />
       </div>
 
       {/* Leverage Slider */}
@@ -297,12 +356,6 @@ export default function LongShort({ isDisplay = true }: Props) {
 
       {/* Balance Information */}
       <div className="space-y-2 mt-3">
-        {/* <div className="flex justify-between items-center text-sm">
-          <span className="text-tertiary-foreground">Available Balance</span>
-          <span className="text-foreground font-medium">
-            {formatNumber(availableBalance, { fractionDigits: 2 })} {previewData?.collateral_in}
-          </span>
-        </div> */}
         <div className="flex justify-between items-center text-sm">
           <span className="text-tertiary-foreground">Collateral In</span>
           <span className="text-foreground font-medium">
