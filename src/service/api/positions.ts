@@ -7,6 +7,7 @@ export interface PositionPreviewRequest {
   market_id: string;
   side: 'long' | 'short';
   size: string;
+  token_type: 'market_token' | 'collateral_token';
 }
 
 export interface PositionPreviewData {
@@ -25,6 +26,7 @@ export interface PositionPreviewData {
   total_cost: string;
   available_balance: string;
   collateral_in: string;
+  converted_size: string;
 }
 
 export interface PositionPreviewResponse {

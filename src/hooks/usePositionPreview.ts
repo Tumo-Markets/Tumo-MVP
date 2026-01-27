@@ -13,17 +13,26 @@ interface UsePositionPreviewOptions {
   side: 'long' | 'short';
   size: string;
   enabled?: boolean;
+  token_type: 'market_token' | 'collateral_token';
 }
 
-export const usePositionPreview = ({ leverage, market_id, side, size, enabled = true }: UsePositionPreviewOptions) => {
+export const usePositionPreview = ({
+  leverage,
+  market_id,
+  side,
+  size,
+  enabled = true,
+  token_type,
+}: UsePositionPreviewOptions) => {
   return useQuery({
-    queryKey: positionPreviewKeys.preview({ leverage, market_id, side, size }),
+    queryKey: positionPreviewKeys.preview({ leverage, market_id, side, size, token_type }),
     queryFn: async () => {
       const response = await getPositionPreview({
         leverage,
         market_id,
         side,
         size,
+        token_type,
       });
       return response.data;
     },
