@@ -15,7 +15,7 @@ export const USDH_TOKEN = new TokenInfoOneChain({
   coinType: USDH_TYPE,
   name: 'USD Hedge',
   symbol: 'USDH',
-  decimals: 6,
+  decimals: 9,
 });
 
 // BTC Token (Bitcoin wrapped - 8 decimals)
