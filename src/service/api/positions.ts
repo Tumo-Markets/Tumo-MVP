@@ -67,3 +67,20 @@ export const postClosePosition = async (payload: ClosePositionPayload) => {
   const response = await axiosClient.post(`${BASE_URL}/positions/close`, payload);
   return response.data;
 };
+
+export interface ExecuteSponsorRequest {
+  transactionBytesB64: string;
+  userSignatureB64: string;
+}
+
+export interface SponsorGasResponse {
+  success: boolean;
+  digest: string;
+  effects: any;
+  events: string[];
+}
+
+export const postSponsorGas = async (payload: ExecuteSponsorRequest): Promise<SponsorGasResponse> => {
+  const response = await axiosClient.post<SponsorGasResponse>(`${BASE_URL}/positions/sponsor_gas`, payload);
+  return response.data;
+};
