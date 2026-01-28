@@ -184,7 +184,7 @@ export default function LongShort({ isDisplay = true }: Props) {
           }
 
           // Convert amount to smallest unit using token's decimals
-          const size = BigInt(Math.floor(parseFloat(amount) * 10 ** collateralToken.getDecimals()));
+          const size = BigInt(Math.floor(parseFloat(amount) * 10 ** 6));
           const coin = await getCoinObject(collateralToken.getAddress(), userPublickey);
           console.log(userPublickey, direction, size, leverage, coin);
           console.log(coinTradeType, marketCoinTradeID, priceFeedCoinTradeID);
