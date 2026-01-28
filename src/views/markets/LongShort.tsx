@@ -207,16 +207,16 @@ export default function LongShort({ isDisplay = true }: Props) {
           console.log('Digest:', result.digest);
 
           // Post position data to backend
-          await postOpenPosition({
-            market_id: selectedPair?.id || '',
-            user_address: userPublickey,
-            side: positionType,
-            size: Number(amount),
-            leverage: leverage,
-            entry_price: previewData?.entry_price ? parseFloat(previewData.entry_price) : 0,
-            tx_hash: result.digest,
-            block_number: 0,
-          });
+          // await postOpenPosition({
+          //   market_id: selectedPair?.id || '',
+          //   user_address: userPublickey,
+          //   side: positionType,
+          //   size: Number(amount),
+          //   leverage: leverage,
+          //   entry_price: previewData?.entry_price ? parseFloat(previewData.entry_price) : 0,
+          //   tx_hash: result.digest,
+          //   block_number: 0,
+          // });
 
           return result;
         }

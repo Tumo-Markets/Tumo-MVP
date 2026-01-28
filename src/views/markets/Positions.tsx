@@ -60,16 +60,16 @@ export default function Positions() {
           console.log('Digest:', result.digest);
 
           // Post close position data to backend for ALL positions
-          await Promise.all(
-            positions.map(position =>
-              postClosePosition({
-                position_id: position.position_id,
-                exit_price: position.current_price,
-                tx_hash: result.digest,
-                status: 'closed',
-              }),
-            ),
-          );
+          // await Promise.all(
+          //   positions.map(position =>
+          //     postClosePosition({
+          //       position_id: position.position_id,
+          //       exit_price: position.current_price,
+          //       tx_hash: result.digest,
+          //       status: 'closed',
+          //     }),
+          //   ),
+          // );
 
           return result;
         }
