@@ -10,24 +10,14 @@ import { useMarketStats } from 'src/hooks/markets/useMarketStats';
 import useAsyncExecute from 'src/hooks/useAsyncExecute';
 import { PaginatedCoins } from '@onelabs/sui/client';
 import { Transaction } from '@onelabs/sui/transactions';
-import {
-  BTC_TYPE,
-  getCoinObject,
-  LIQUIDITY_POOL_ID,
-  MARKET_BTC_ID,
-  OCT_TYPE,
-  PACKAGE_ID,
-  PRICE_FEED_BTC_ID,
-  PRICE_FEED_ID,
-  USDH_TYPE,
-} from 'src/constant/contracts';
-import { useCurrentAccount, useSuiClient } from '@onelabs/dapp-kit';
-import { useSponsoredTransaction } from 'src/hooks/useSponsoredTransaction';
+import { getCoinObject, LIQUIDITY_POOL_ID, PACKAGE_ID, USDH_TYPE } from 'src/constant/contracts';
+import { useCurrentAccount } from '@onelabs/dapp-kit';
 import { useTokenBalance } from 'src/hooks/useTokenBalance';
 import { getTokenInfoBySymbol } from 'src/constant/tokenInfo';
 import { postOpenPosition } from 'src/service/api/positions';
 import OneChainConnectButton from 'src/components/Button/OneChainConnectButton';
 import { BN } from 'src/utils';
+import { useSponsoredTransactionOptimal } from 'src/hooks/useSponsoredTransactionOptimal';
 
 type PositionType = 'long' | 'short';
 
@@ -44,7 +34,7 @@ export default function LongShort({ isDisplay = true }: Props) {
   const [activeField, setActiveField] = useState<'amount1' | 'amount2'>('amount1');
   const maxLeverage = selectedPair?.maxLeverage || 0;
   const [leverage, setLeverage] = useState(1);
-  const { executeSponsoredTransaction, isLoading: isSponsoredTxLoading } = useSponsoredTransaction();
+  const { executeSponsoredTransaction, isLoading: isSponsoredTxLoading } = useSponsoredTransactionOptimal();
 
   // Get token info and balance for collateral
   const { data: marketStats } = useMarketStats(selectedPair?.id);
