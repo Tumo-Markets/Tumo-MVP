@@ -2,7 +2,6 @@
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from 'shadcn/table';
 import { useCurrentAccount } from '@onelabs/dapp-kit';
 import { usePositionsWebSocket } from 'src/hooks/usePositionsWebSocket';
-import { useSponsoredTransaction } from 'src/hooks/useSponsoredTransaction';
 import { formatNumber } from 'src/utils/format';
 import useAsyncExecute from 'src/hooks/useAsyncExecute';
 import {
@@ -16,12 +15,13 @@ import {
 } from 'src/constant/contracts';
 import { Transaction } from '@onelabs/sui/transactions';
 import { postClosePosition } from 'src/service/api/positions';
+import { useSponsoredTransactionOptimal } from 'src/hooks/useSponsoredTransactionOptimal';
 
 export default function Positions() {
   const account = useCurrentAccount();
   const { positions, isLoading, error } = usePositionsWebSocket(account?.address);
   const { asyncExecute } = useAsyncExecute();
-  const { executeSponsoredTransaction, isLoading: isSponsoredTxLoading } = useSponsoredTransaction();
+  const { executeSponsoredTransaction, isLoading: isSponsoredTxLoading } = useSponsoredTransactionOptimal();
 
   function buildClosePosition(
     userPublickey: string,
@@ -130,12 +130,12 @@ export default function Positions() {
                   {formatNumber(parseFloat(position.size), { fractionDigits: 4 })} {position?.collateral_in}
                 </TableCell>
                 <TableCell className={parseFloat(position.unrealized_pnl) >= 0 ? 'text-green-500' : 'text-red-500'}>
-                  {formatNumber(position.unrealized_pnl, { fractionDigits: 4 })}
+                  ${formatNumber(position.unrealized_pnl, { fractionDigits: 4 })}
                 </TableCell>
-                <TableCell>{formatNumber(parseFloat(position.collateral), { fractionDigits: 4 })}</TableCell>
-                <TableCell>{formatNumber(parseFloat(position.entry_price), { fractionDigits: 4 })}</TableCell>
-                <TableCell>{formatNumber(parseFloat(position.current_price), { fractionDigits: 4 })}</TableCell>
-                <TableCell>{formatNumber(parseFloat(position.liquidation_price), { fractionDigits: 4 })}</TableCell>
+                <TableCell>${formatNumber(parseFloat(position.collateral), { fractionDigits: 4 })}</TableCell>
+                <TableCell>${formatNumber(parseFloat(position.entry_price), { fractionDigits: 4 })}</TableCell>
+                <TableCell>${formatNumber(parseFloat(position.current_price), { fractionDigits: 4 })}</TableCell>
+                <TableCell>${formatNumber(parseFloat(position.liquidation_price), { fractionDigits: 4 })}</TableCell>
                 <TableCell className="text-center">
                   <button
                     className="px-3 py-1 text-xs font-medium text-white bg-red-500 hover:bg-red-600 rounded transition-colors"

@@ -2,26 +2,12 @@ import { useState } from 'react';
 import { Transaction } from '@onelabs/sui/transactions';
 import { useCurrentAccount, useSignTransaction, useSuiClient } from '@onelabs/dapp-kit';
 import { SuiTransactionBlockResponse } from '@onelabs/sui/client';
-import { axiosClient } from 'src/service/axios';
 import { toB64 } from '@onelabs/sui/utils';
 import { OCT_TYPE } from 'src/constant/contracts';
-
-const EXECUTE_SPONSOR_URL = 'https://backend-product.futstar.fun/api/v1/positions/sponsor_gas';
+import { postSponsorGas, ExecuteSponsorRequest } from 'src/service/api/positions';
 
 // Hardcode sponsor address - public info, không cần giữ bí mật
 const SPONSOR_ADDRESS = '0xa81693e1ac3a6bd2091b2a014f64155df6a1b66adf1ee7e5e9891617fe6c8492';
-
-interface ExecuteSponsorRequest {
-  transactionBytesB64: string;
-  userSignatureB64: string;
-}
-
-interface SponsorGasResponse {
-  success: boolean;
-  digest: string;
-  effects: any;
-  events: string[];
-}
 
 /**
  * Hook để execute sponsored transaction chỉ với 1 API call
@@ -109,9 +95,7 @@ export function useSponsoredTransactionOptimal() {
         userSignatureB64: userSignResult.signature,
       };
 
-      const response = await axiosClient.post<SponsorGasResponse>(EXECUTE_SPONSOR_URL, requestBody);
-
-      const { success, digest, effects, events } = response.data;
+      const { success, digest, effects, events } = await postSponsorGas(requestBody);
 
       if (!success) {
         throw new Error('Transaction execution failed');
