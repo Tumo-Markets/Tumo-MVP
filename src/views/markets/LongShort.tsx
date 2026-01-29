@@ -10,14 +10,14 @@ import { useMarketStats } from 'src/hooks/markets/useMarketStats';
 import useAsyncExecute from 'src/hooks/useAsyncExecute';
 import { PaginatedCoins } from '@onelabs/sui/client';
 import { Transaction } from '@onelabs/sui/transactions';
-import { getCoinObject, LIQUIDITY_POOL_ID, PACKAGE_ID, USDH_TYPE } from 'src/constant/contracts';
+import { getCoinObject, LIQUIDITY_POOL_ID, PACKAGE_ID } from 'src/constant/contracts';
 import { useCurrentAccount } from '@onelabs/dapp-kit';
 import { useTokenBalance } from 'src/hooks/useTokenBalance';
 import { getTokenInfoBySymbol } from 'src/constant/tokenInfo';
-import { postOpenPosition } from 'src/service/api/positions';
 import OneChainConnectButton from 'src/components/Button/OneChainConnectButton';
 import { BN } from 'src/utils';
 import { useSponsoredTransactionOptimal } from 'src/hooks/useSponsoredTransactionOptimal';
+import { HACKATHON_TYPE } from 'src/constant/contracts/types';
 
 type PositionType = 'long' | 'short';
 
@@ -38,7 +38,8 @@ export default function LongShort({ isDisplay = true }: Props) {
 
   // Get token info and balance for collateral
   const { data: marketStats } = useMarketStats(selectedPair?.id);
-  const collateralToken = marketStats?.collateral_in ? getTokenInfoBySymbol(marketStats.collateral_in) : null;
+  const collateralToken = selectedPair?.collateralToken ? getTokenInfoBySymbol(selectedPair?.collateralToken) : null;
+  console.log(selectedPair?.collateralToken, collateralToken);
   const {
     balance: availableBalance,
     isLoading: isBalanceLoading,
@@ -165,7 +166,7 @@ export default function LongShort({ isDisplay = true }: Props) {
         tx.pure.u8(direction),
         tx.object('0x6'),
       ],
-      typeArguments: [USDH_TYPE, coinTradeType],
+      typeArguments: [HACKATHON_TYPE, coinTradeType],
     });
     return tx;
   }
@@ -184,7 +185,7 @@ export default function LongShort({ isDisplay = true }: Props) {
           }
 
           // Convert amount to smallest unit using token's decimals
-          const size = BigInt(Math.floor(parseFloat(amount) * 10 ** 6));
+          const size = BigInt(Math.floor(parseFloat(amount) * 10 ** collateralToken.decimals));
           const coin = await getCoinObject(collateralToken.getAddress(), userPublickey);
           console.log(userPublickey, direction, size, leverage, coin);
           console.log(coinTradeType, marketCoinTradeID, priceFeedCoinTradeID);

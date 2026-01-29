@@ -1,21 +1,13 @@
 'use client';
-import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from 'shadcn/table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from 'shadcn/table';
 import { useCurrentAccount } from '@onelabs/dapp-kit';
 import { usePositionsWebSocket } from 'src/hooks/usePositionsWebSocket';
 import { formatNumber } from 'src/utils/format';
 import useAsyncExecute from 'src/hooks/useAsyncExecute';
-import {
-  BTC_TYPE,
-  getCoinObject,
-  LIQUIDITY_POOL_ID,
-  MARKET_BTC_ID,
-  PACKAGE_ID,
-  PRICE_FEED_BTC_ID,
-  USDH_TYPE,
-} from 'src/constant/contracts';
+import { BTC_TYPE, LIQUIDITY_POOL_ID, MARKET_BTC_ID, PACKAGE_ID, PRICE_FEED_BTC_ID } from 'src/constant/contracts';
 import { Transaction } from '@onelabs/sui/transactions';
-import { postClosePosition } from 'src/service/api/positions';
 import { useSponsoredTransactionOptimal } from 'src/hooks/useSponsoredTransactionOptimal';
+import { HACKATHON_TYPE } from 'src/constant/contracts/types';
 
 export default function Positions() {
   const account = useCurrentAccount();
@@ -39,7 +31,7 @@ export default function Positions() {
         tx.object(priceFeedCoinTrade),
         tx.object('0x6'),
       ],
-      typeArguments: [USDH_TYPE, coinTradeType],
+      typeArguments: [HACKATHON_TYPE, coinTradeType],
     });
     tx.transferObjects([coin], userPublickey);
     return tx;
