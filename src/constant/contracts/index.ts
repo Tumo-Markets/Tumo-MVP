@@ -2,13 +2,13 @@ import { Transaction } from '@onelabs/sui/transactions';
 import { getFullnodeUrl, PaginatedCoins, SuiClient, SuiObjectResponse } from '@onelabs/sui/client';
 
 // Re-export token types
-export { OCT_TYPE, USDH_TYPE, BTC_TYPE } from './types';
+export { OCT_TYPE, USDH_TYPE, BTC_TYPE, HACKATHON_TYPE } from './types';
 
-export const PACKAGE_ID = '0x3d027f54a56da8f7ff37202acd710d7e09c5b4754390495fc194b4aa8545c8da';
-export const LIQUIDITY_POOL_ID = '0x1855575f8b2833526c9a8c90f36a37d960f4ea79c9e522adad93488a566a9dfa';
-export const MARKET_BTC_ID = '0x2ba0f2dd3b1fe3544c6617dd14ea12518ae2596860763b144e78866dc9b556fc';
-export const PRICE_FEED_ID = '0xa038c0823cd32d5f2745b119e0bc9b6261582bebc679a2c15a134de24045ca42';
-export const PRICE_FEED_BTC_ID = '0xa038c0823cd32d5f2745b119e0bc9b6261582bebc679a2c15a134de24045ca42';
+export const PACKAGE_ID = '0x255d4eb897177a6749ae4a3b54b6833afca05587b794adeab6e3c12a453f41a6';
+export const LIQUIDITY_POOL_ID = '0xbba60cc9830e27822d813d08ecc336330265b4e0196fa7c5081440754fac4f78';
+export const MARKET_BTC_ID = '0x484657984f8170c8c42038ab693b8a0a0ead6970a31d81628d6c00c483025bc5';
+export const PRICE_FEED_ID = '0xc2cb74f22555a0a7b991ec80f68a3d25ecbbe50296fef634c821e88a91884bbd';
+export const PRICE_FEED_BTC_ID = '0xc2cb74f22555a0a7b991ec80f68a3d25ecbbe50296fef634c821e88a91884bbd';
 
 const client = new SuiClient({
   url: getFullnodeUrl('testnet'),

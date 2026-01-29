@@ -1,6 +1,6 @@
 import { TokenInfoOneChain } from './types';
 import { OCT_TYPE, USDH_TYPE, BTC_TYPE } from '../contracts';
-import { USDC_TYPE } from '../contracts/types';
+import { HACKATHON_TYPE, USDC_TYPE } from '../contracts/types';
 
 // OCT Token (Gas token - 9 decimals)
 export const OCT_TOKEN = new TokenInfoOneChain({
@@ -26,6 +26,13 @@ export const BTC_TOKEN = new TokenInfoOneChain({
   decimals: 8,
 });
 
+export const HACKATHON_TOKEN = new TokenInfoOneChain({
+  coinType: HACKATHON_TYPE,
+  name: 'Hackathon',
+  symbol: 'HACKATHON',
+  decimals: 9,
+});
+
 export const USDC_TOKEN = new TokenInfoOneChain({
   coinType: '',
   name: 'USD Coin',
@@ -39,6 +46,7 @@ export const TOKEN_REGISTRY: Record<string, TokenInfoOneChain> = {
   [USDH_TYPE]: USDH_TOKEN,
   [BTC_TYPE]: BTC_TOKEN,
   [USDC_TYPE]: USDC_TOKEN,
+  [HACKATHON_TYPE]: HACKATHON_TOKEN,
 };
 
 /**
