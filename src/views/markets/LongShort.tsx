@@ -94,9 +94,9 @@ export default function LongShort({ isDisplay = true }: Props) {
 
   const checkActiveButton = useMemo(() => {
     const numAmount = parseFloat(amount);
-    const numBalance = parseFloat(availableBalance);
+    const numBalance = parseFloat(BN(availableBalance).times(leverage).toFixed(6, 1));
     return numAmount > 0 && numAmount <= numBalance;
-  }, [amount, availableBalance]);
+  }, [amount, availableBalance, leverage]);
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -270,7 +270,10 @@ export default function LongShort({ isDisplay = true }: Props) {
             <span className="text-xs leading-2 text-secondary-foreground">
               Balance: <span className="text-xs">{isBalanceLoading ? '...' : availableBalance}</span>
             </span>
-            <p onClick={() => setAmount(availableBalance)} className="text-[#3571ee] text-xs cursor-pointer leading-2">
+            <p
+              onClick={() => setAmount(BN(availableBalance).times(leverage).toFixed(6, 1))}
+              className="text-[#3571ee] text-xs cursor-pointer leading-2"
+            >
               Max
             </p>
           </div>

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useCurrentAccount, useSuiClient } from '@onelabs/dapp-kit';
 import { getTokenInfo } from 'src/constant/tokenInfo';
+import { BN } from 'src/utils';
 
 export function useTokenBalance(tokenType: string) {
   const account = useCurrentAccount();
@@ -36,7 +37,7 @@ export function useTokenBalance(tokenType: string) {
       if (tokenBalance) {
         const raw = BigInt(tokenBalance.totalBalance);
         const divisor = BigInt(10 ** decimals);
-        const formatted = (Number(raw) / Number(divisor)).toFixed(fractionDigits);
+        const formatted = BN(Number(raw) / Number(divisor)).toFixed(fractionDigits, 1);
 
         setRawBalance(raw);
         setBalance(formatted);
