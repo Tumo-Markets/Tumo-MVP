@@ -37,7 +37,7 @@ export default function LongShort({ isDisplay = true }: Props) {
   const { executeSponsoredTransaction, isLoading: isSponsoredTxLoading } = useSponsoredTransactionOptimal();
 
   // Get token info and balance for collateral
-  const { data: marketStats } = useMarketStats(selectedPair?.id);
+  const { data: marketStats, isLoading: isMarketStatsLoading } = useMarketStats(selectedPair?.id);
   const collateralToken = selectedPair?.collateralToken ? getTokenInfoBySymbol(selectedPair?.collateralToken) : null;
   console.log(selectedPair?.collateralToken, collateralToken);
   const {
@@ -353,10 +353,10 @@ export default function LongShort({ isDisplay = true }: Props) {
         <div className="flex justify-between items-center text-sm">
           <span className="text-tertiary-foreground">Collateral In</span>
           <span className="text-foreground font-medium">
-            {isLoadingPreview ? (
+            {isMarketStatsLoading ? (
               <Skeleton className="h-4 w-20" />
-            ) : previewData ? (
-              <>{previewData.collateral_in}</>
+            ) : marketStats?.collateral_in ? (
+              <>{marketStats?.collateral_in}</>
             ) : (
               '-'
             )}
